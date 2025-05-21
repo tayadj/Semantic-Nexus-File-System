@@ -1,4 +1,6 @@
 #include "../atomic/create.h"
+#include "../atomic/read.h"
+#include "../atomic/metafile.h"
 
 #include <Python.h>
 
@@ -20,12 +22,38 @@ static PyObject* py_create_file(PyObject* self, PyObject* args) {
 	}
 
 	Py_RETURN_NONE;
+
+}
+
+static PyObject* py_read_file(PyObject* self, PyObject* args) {
+
+	const char* id;
+
+	if (!PyArg_ParseTuple(args, "s", &id)) {
+		return NULL;
+	}
+
+	Metafile* metafile = read_file(id);
+	if (metafile == NULL) {
+		PyErr_SetString(PyExc_IOError, "Failed to read file.");
+		return NULL;
+	}
+
+	PyObject* result = Py_BuildValue("ss", metafile->data, metafile->metadata);
+
+	free(metafile->data);
+	free(metafile->metadata);
+	free(metafile);
+
+	return result;
+
 }
 
 
 
 static PyMethodDef operator_methods[] = {
 	{"create_file", py_create_file, METH_VARARGS, "Create a file with given id, data and metadata."},
+	{"read_file",   py_read_file,   METH_VARARGS, "Read file and return data and metadata as strings."},
 	{NULL, NULL, 0, NULL}
 };
 
