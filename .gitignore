@@ -1,0 +1,10 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+build/
+
+# IDE files
+.vs/
+
+# Environment settings
+.env
