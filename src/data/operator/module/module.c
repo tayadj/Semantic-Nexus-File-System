@@ -1,10 +1,45 @@
-#include "../atomic/atomic.h"
-#include "../atomic/metafile.h"
+#include "../objects/metafile/metafile.h"
+#include "../methods/atomic/atomic.h"
 
 #include <Python.h>
 
+static PyMethodDef operator_methods[] = {
+	{"create_file", py_create_file, METH_VARARGS, "Create a file with given id and Metafile object."},
+	{NULL, NULL, 0, NULL}
+};
 
+static struct PyModuleDef operator_module = {
+	PyModuleDef_HEAD_INIT,
+	"operator",
+	"A semantic file system operator.",
+	-1,
+	operator_methods
+};
 
+PyMODINIT_FUNC PyInit_operator(void) {
+
+	PyObject* pyModule;
+
+	if (PyType_Ready(&PyMetafileType) < 0) {
+		return NULL;
+	}
+		
+	pyModule = PyModule_Create(&operator_module);
+	if (pyModule == NULL) {
+		return NULL;
+	}
+
+	Py_INCREF(&PyMetafileType);
+	if (PyModule_AddObject(pyModule, "Metafile", (PyObject*)&PyMetafileType) < 0) {
+		Py_DECREF(&PyMetafileType);
+		Py_DECREF(pyModule);
+		return NULL;
+	}
+
+	return pyModule;
+}
+
+/*
 static PyObject* py_create_file(PyObject* self, PyObject* args) {
 
 	const char* id;
@@ -85,3 +120,4 @@ static struct PyModuleDef operator_module = {
 PyMODINIT_FUNC PyInit_operator(void) {
 	return PyModule_Create(&operator_module);
 }
+*/

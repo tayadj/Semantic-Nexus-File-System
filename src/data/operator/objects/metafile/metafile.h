@@ -1,0 +1,87 @@
+#ifndef METAFILE_H
+#define METAFILE_H
+
+#include <Python.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+	typedef struct {
+
+		char* text;
+
+		unsigned char* image;
+		size_t image_size;
+
+		unsigned char* audio;
+		size_t audio_size;
+
+		unsigned char* video;
+		size_t video_size;
+
+		struct {
+			char* head;
+			char* relation;
+			char* tail;
+		}* ontology;
+		size_t ontology_count;
+
+	} Metafile;
+
+	static void Metafile_free(Metafile* metafile);
+
+
+
+	typedef struct {
+
+		PyObject_HEAD
+		Metafile* metafile;
+
+	} PyMetafile;
+
+	void PyMetafile_dealloc(PyMetafile* self);
+	PyObject* PyMetafile_new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
+	int PyMetafile_init(PyMetafile* self, PyObject* args, PyObject* kwargs);
+
+	PyObject* PyMetafile_get_text(PyMetafile* self, void* closure);
+	PyObject* PyMetafile_get_image(PyMetafile* self, void* closure);
+	/*static PyObject* PyMetafile_get_audio(PyMetafile* self, void* closure);
+	static PyObject* PyMetafile_get_video(PyMetafile* self, void* closure);
+	static PyObject* PyMetafile_get_ontology(PyMetafile* self, void* closure);*/
+
+	int PyMetafile_set_text(PyMetafile* self, PyObject* value, void* closure);
+	int PyMetafile_set_image(PyMetafile* self, PyObject* value, void* closure);
+	/*static int PyMetafile_set_audio(PyMetafile* self, PyObject* value, void* closure);
+	static int PyMetafile_set_video(PyMetafile* self, PyObject* value, void* closure);
+	static int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure);*/
+
+	static PyGetSetDef PyMetafile_getset[] = {
+		{ "text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "text", NULL },
+		{ "image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "image", NULL },
+		{ NULL }
+	};
+
+	static PyMethodDef PyMetafile_methods[] = {
+		{ NULL }
+	};
+
+	static PyTypeObject PyMetafileType = {
+		PyVarObject_HEAD_INIT(NULL, 0)
+		.tp_name = "operator.Metafile",
+		.tp_doc = "Metafile object.",
+		.tp_basicsize = sizeof(PyMetafile),
+		.tp_itemsize = 0,
+		.tp_flags = Py_TPFLAGS_DEFAULT,
+		.tp_new = PyMetafile_new,
+		.tp_init = (initproc)PyMetafile_init,
+		.tp_dealloc = (destructor)PyMetafile_dealloc,
+		.tp_methods = PyMetafile_methods,
+		.tp_getset = PyMetafile_getset,
+	};
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
