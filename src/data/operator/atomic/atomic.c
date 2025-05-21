@@ -1,5 +1,4 @@
-#include "read.h"
-#include "metafile.h"
+#include "atomic.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +6,41 @@
 #include <string.h>
 
 
+
+int create_file(const char* id, const char* data, const char* metadata) {
+
+	FILE* file_pointer = fopen(id, "wb");
+	if (!file_pointer) {
+		return -1;
+	}
+
+	uint32_t data_size = (uint32_t)strlen(data);
+	uint32_t metadata_size = (uint32_t)strlen(metadata);
+
+	if (fwrite(&data_size, sizeof(data_size), 1, file_pointer) != 1) {
+		fclose(file_pointer);
+		return -1;
+	}
+
+	if (fwrite(data, sizeof(char), data_size, file_pointer) != data_size) {
+		fclose(file_pointer);
+		return -1;
+	}
+
+	if (fwrite(&metadata_size, sizeof(metadata_size), 1, file_pointer) != 1) {
+		fclose(file_pointer);
+		return -1;
+	}
+
+	if (fwrite(metadata, sizeof(char), metadata_size, file_pointer) != metadata_size) {
+		fclose(file_pointer);
+		return -1;
+	}
+
+	fclose(file_pointer);
+	return 0;
+
+}
 
 Metafile* read_file(const char* id) {
 
@@ -29,7 +63,6 @@ Metafile* read_file(const char* id) {
 		return NULL;
 	}
 	if (fread(data_buffer, sizeof(char), data_size, file_pointer) != data_size) {
-		perror("Ошибка чтения data");
 		free(data_buffer);
 		fclose(file_pointer);
 		return NULL;
@@ -49,7 +82,6 @@ Metafile* read_file(const char* id) {
 		return NULL;
 	}
 	if (fread(metadata_buffer, sizeof(char), metadata_size, file_pointer) != metadata_size) {
-		perror("Ошибка чтения metadata");
 		free(data_buffer);
 		free(metadata_buffer);
 		fclose(file_pointer);
@@ -70,5 +102,15 @@ Metafile* read_file(const char* id) {
 	metafile->metadata = metadata_buffer;
 
 	return metafile;
+
+}
+
+int delete_file(const char* id) {
+
+	if (remove(id) != 0) {
+		return -1;
+	}
+
+	return 0;
 
 }

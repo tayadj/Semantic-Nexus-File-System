@@ -1,5 +1,4 @@
-#include "../atomic/create.h"
-#include "../atomic/read.h"
+#include "../atomic/atomic.h"
 #include "../atomic/metafile.h"
 
 #include <Python.h>
@@ -49,11 +48,29 @@ static PyObject* py_read_file(PyObject* self, PyObject* args) {
 
 }
 
+static PyObject* py_delete_file(PyObject* self, PyObject* args) {
+
+	const char* id;
+
+	if (!PyArg_ParseTuple(args, "s", &id)) {
+		return NULL;
+	}
+
+	if (delete_file(id) != 0) {
+		PyErr_SetString(PyExc_IOError, "Failed to delete file.");
+		return NULL;
+	}
+
+	Py_RETURN_NONE;
+
+}
+
 
 
 static PyMethodDef operator_methods[] = {
 	{"create_file", py_create_file, METH_VARARGS, "Create a file with given id, data and metadata."},
 	{"read_file",   py_read_file,   METH_VARARGS, "Read file and return data and metadata as strings."},
+	{"delete_file", py_delete_file, METH_VARARGS, "Delete a file with given id."},
 	{NULL, NULL, 0, NULL}
 };
 

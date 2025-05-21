@@ -5,8 +5,7 @@ module = setuptools.Extension(
 	"operator",
 	sources = [
 		os.path.join("module", "module.c"),
-		os.path.join("atomic", "create.c"),
-		os.path.join("atomic", "read.c"),
+		os.path.join("atomic", "atomic.c"),
 	],
 	include_dirs = ["atomic", "module"]
 )
