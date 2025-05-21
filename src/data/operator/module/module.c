@@ -3,6 +3,8 @@
 
 #include <Python.h>
 
+
+
 static PyMethodDef operator_methods[] = {
 	{"create_file", py_create_file, METH_VARARGS, "Create a file with given id and Metafile object."},
 	{NULL, NULL, 0, NULL}

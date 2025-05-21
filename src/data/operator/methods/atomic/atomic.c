@@ -117,7 +117,7 @@ PyObject* py_create_file(PyObject* self, PyObject* args) {
     if (!PyArg_ParseTuple(args, "sO", &id, &metafile)) {
         return NULL;
     }
-        
+      
     if (!PyObject_TypeCheck(metafile, &PyMetafileType)) {
         PyErr_SetString(PyExc_TypeError, "Expected a Metafile object.");
         return NULL;

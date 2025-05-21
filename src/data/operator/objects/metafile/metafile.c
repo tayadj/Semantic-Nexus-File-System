@@ -2,7 +2,7 @@
 
 
 
-static void Metafile_free(Metafile* metafile) {
+void Metafile_free(Metafile* metafile) {
 
 	if (!metafile) {
 		return;
@@ -232,7 +232,58 @@ PyObject* PyMetafile_get_image(PyMetafile* self, void* closure) {
 
 }
 
+PyObject* PyMetafile_get_audio(PyMetafile* self, void* closure) {
 
+	if (self->metafile->audio && self->metafile->audio_size > 0) {
+		return PyBytes_FromStringAndSize((const char*)self->metafile->audio, self->metafile->audio_size);
+	}
+
+	Py_RETURN_NONE;
+
+}
+
+PyObject* PyMetafile_get_video(PyMetafile* self, void* closure) {
+
+	if (self->metafile->video && self->metafile->video_size > 0) {
+		return PyBytes_FromStringAndSize((const char*)self->metafile->video, self->metafile->video_size);
+	}
+
+	Py_RETURN_NONE;
+
+}
+
+PyObject* PyMetafile_get_ontology(PyMetafile* self, void* closure) {
+
+	PyObject* list = PyList_New((Py_ssize_t)self->metafile->ontology_count);
+
+	if (!list) {
+		return NULL;
+	}
+		
+	for (size_t i = 0; i < self->metafile->ontology_count; ++i) {
+		PyObject* dict = PyDict_New();
+		if (!dict) {
+			Py_DECREF(list);
+			return NULL;
+		}
+		PyObject* py_head = self->metafile->ontology[i].head ? PyUnicode_FromString(self->metafile->ontology[i].head) : Py_None;
+		PyObject* py_relation = self->metafile->ontology[i].relation ? PyUnicode_FromString(self->metafile->ontology[i].relation) : Py_None;
+		PyObject* py_tail = self->metafile->ontology[i].tail ? PyUnicode_FromString(self->metafile->ontology[i].tail) : Py_None;
+		if (py_head == Py_None) Py_INCREF(Py_None);
+		if (py_relation == Py_None) Py_INCREF(Py_None);
+		if (py_tail == Py_None) Py_INCREF(Py_None);
+		PyDict_SetItemString(dict, "head", py_head);
+		PyDict_SetItemString(dict, "relation", py_relation);
+		PyDict_SetItemString(dict, "tail", py_tail);
+		Py_DECREF(py_head);
+		Py_DECREF(py_relation);
+		Py_DECREF(py_tail);
+		PyList_SetItem(list, (Py_ssize_t)i, dict);
+	}
+
+	return list;
+
+}
 
 int PyMetafile_set_text(PyMetafile* self, PyObject* value, void* closure) {
 
@@ -264,7 +315,6 @@ int PyMetafile_set_text(PyMetafile* self, PyObject* value, void* closure) {
 
 }
 
-
 int PyMetafile_set_image(PyMetafile* self, PyObject* value, void* closure) {
 
 	if (!value) {
@@ -281,7 +331,7 @@ int PyMetafile_set_image(PyMetafile* self, PyObject* value, void* closure) {
 	if (PyBytes_AsStringAndSize(value, &buffer, &size) == -1) {
 		return -1;
 	}
-		
+
 	unsigned char* _image = malloc(size);
 	if (!_image) {
 		PyErr_NoMemory();
@@ -299,3 +349,155 @@ int PyMetafile_set_image(PyMetafile* self, PyObject* value, void* closure) {
 	return 0;
 
 }
+
+int PyMetafile_set_audio(PyMetafile* self, PyObject* value, void* closure) {
+
+	if (!value) {
+		PyErr_SetString(PyExc_TypeError, "Cannot delete the audio attribute.");
+		return -1;
+	}
+	if (!PyBytes_Check(value)) {
+		PyErr_SetString(PyExc_TypeError, "Audio must be byte-type.");
+		return -1;
+	}
+
+	char* buffer;
+	Py_ssize_t size;
+	if (PyBytes_AsStringAndSize(value, &buffer, &size) == -1) {
+		return -1;
+	}
+		
+	unsigned char* _audio = malloc(size);
+	if (!_audio) {
+		PyErr_NoMemory();
+		return -1;
+	}
+
+	memcpy((_audio), buffer, size);
+	if (self->metafile->audio) {
+		free(self->metafile->image);
+	}
+
+	self->metafile->audio = _audio;
+	self->metafile->audio_size = (size_t)size;
+
+	return 0;
+
+}
+
+int PyMetafile_set_video(PyMetafile* self, PyObject* value, void* closure) {
+
+	if (!value) {
+		PyErr_SetString(PyExc_TypeError, "Cannot delete the video attribute.");
+		return -1;
+	}
+	if (!PyBytes_Check(value)) {
+		PyErr_SetString(PyExc_TypeError, "Video must be byte-type.");
+		return -1;
+	}
+
+	char* buffer;
+	Py_ssize_t size;
+	if (PyBytes_AsStringAndSize(value, &buffer, &size) == -1) {
+		return -1;
+	}
+
+	unsigned char* _video = malloc(size);
+	if (!_video) {
+		PyErr_NoMemory();
+		return -1;
+	}
+
+	memcpy(_video, buffer, size);
+	if (self->metafile->video) {
+		free(self->metafile->video);
+	}
+
+	self->metafile->video = _video;
+	self->metafile->video_size = (size_t)size;
+
+	return 0;
+
+}
+
+int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure) {
+
+	if (!value) {
+		PyErr_SetString(PyExc_TypeError, "Cannot delete the ontology attribute.");
+		return -1;
+	}
+	if (!PyList_Check(value)) {
+		PyErr_SetString(PyExc_TypeError, "Ontology must be list-type.");
+		return -1;
+	}
+	Py_ssize_t list_size = PyList_Size(value);
+
+	if (self->metafile->ontology) {
+		for (size_t i = 0; i < self->metafile->ontology_count; i++) {
+			free(self->metafile->ontology[i].head);
+			free(self->metafile->ontology[i].relation);
+			free(self->metafile->ontology[i].tail);
+		}
+		free(self->metafile->ontology);
+		self->metafile->ontology = NULL;
+		self->metafile->ontology_count = 0;
+	}
+
+	self->metafile->ontology = malloc(list_size * sizeof(*(self->metafile->ontology)));
+	if (!self->metafile->ontology) {
+		PyErr_NoMemory();
+		return -1;
+	}
+	self->metafile->ontology_count = (size_t)list_size;
+
+	for (Py_ssize_t i = 0; i < list_size; ++i) {
+		PyObject* item = PyList_GetItem(value, i); 
+		if (!PyDict_Check(item)) {
+			PyErr_SetString(PyExc_TypeError, "Ontology entity must be dict-type.");
+			return -1;
+		}
+		PyObject* py_head = PyDict_GetItemString(item, "head");
+		PyObject* py_relation = PyDict_GetItemString(item, "relation");
+		PyObject* py_tail = PyDict_GetItemString(item, "tail");
+		const char* head_str = (py_head && PyUnicode_Check(py_head)) ? PyUnicode_AsUTF8(py_head) : "";
+		const char* relation_str = (py_relation && PyUnicode_Check(py_relation)) ? PyUnicode_AsUTF8(py_relation) : "";
+		const char* tail_str = (py_tail && PyUnicode_Check(py_tail)) ? PyUnicode_AsUTF8(py_tail) : "";
+		self->metafile->ontology[i].head = strdup(head_str);
+		self->metafile->ontology[i].relation = strdup(relation_str);
+		self->metafile->ontology[i].tail = strdup(tail_str);
+		if (!self->metafile->ontology[i].head || !self->metafile->ontology[i].relation || !self->metafile->ontology[i].tail) {
+			PyErr_NoMemory();
+			return -1;
+		}
+	}
+
+	return 0;
+
+}
+
+PyGetSetDef PyMetafile_getset[] = {
+	{"text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "text", NULL},
+	{"image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "image", NULL},
+	{"audio", (getter)PyMetafile_get_audio, (setter)PyMetafile_set_audio, "audio", NULL},
+	{"video", (getter)PyMetafile_get_video, (setter)PyMetafile_set_video, "video", NULL},
+	{"ontology", (getter)PyMetafile_get_ontology, (setter)PyMetafile_set_ontology, "ontology", NULL},
+	{NULL}
+};
+
+PyMethodDef PyMetafile_methods[] = {
+	{ NULL }
+};
+
+PyTypeObject PyMetafileType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
+	.tp_name = "operator.Metafile",
+	.tp_doc = "Metafile object.",
+	.tp_basicsize = sizeof(PyMetafile),
+	.tp_itemsize = 0,
+	.tp_flags = Py_TPFLAGS_DEFAULT,
+	.tp_new = PyMetafile_new,
+	.tp_init = (initproc)PyMetafile_init,
+	.tp_dealloc = (destructor)PyMetafile_dealloc,
+	.tp_methods = PyMetafile_methods,
+	.tp_getset = PyMetafile_getset,
+};

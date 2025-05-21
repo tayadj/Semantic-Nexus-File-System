@@ -29,7 +29,7 @@ extern "C" {
 
 	} Metafile;
 
-	static void Metafile_free(Metafile* metafile);
+	void Metafile_free(Metafile* metafile);
 
 
 
@@ -46,39 +46,19 @@ extern "C" {
 
 	PyObject* PyMetafile_get_text(PyMetafile* self, void* closure);
 	PyObject* PyMetafile_get_image(PyMetafile* self, void* closure);
-	/*static PyObject* PyMetafile_get_audio(PyMetafile* self, void* closure);
-	static PyObject* PyMetafile_get_video(PyMetafile* self, void* closure);
-	static PyObject* PyMetafile_get_ontology(PyMetafile* self, void* closure);*/
+	PyObject* PyMetafile_get_audio(PyMetafile* self, void* closure);
+	PyObject* PyMetafile_get_video(PyMetafile* self, void* closure);
+	PyObject* PyMetafile_get_ontology(PyMetafile* self, void* closure);
 
 	int PyMetafile_set_text(PyMetafile* self, PyObject* value, void* closure);
 	int PyMetafile_set_image(PyMetafile* self, PyObject* value, void* closure);
-	/*static int PyMetafile_set_audio(PyMetafile* self, PyObject* value, void* closure);
-	static int PyMetafile_set_video(PyMetafile* self, PyObject* value, void* closure);
-	static int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure);*/
-
-	static PyGetSetDef PyMetafile_getset[] = {
-		{ "text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "text", NULL },
-		{ "image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "image", NULL },
-		{ NULL }
-	};
-
-	static PyMethodDef PyMetafile_methods[] = {
-		{ NULL }
-	};
-
-	static PyTypeObject PyMetafileType = {
-		PyVarObject_HEAD_INIT(NULL, 0)
-		.tp_name = "operator.Metafile",
-		.tp_doc = "Metafile object.",
-		.tp_basicsize = sizeof(PyMetafile),
-		.tp_itemsize = 0,
-		.tp_flags = Py_TPFLAGS_DEFAULT,
-		.tp_new = PyMetafile_new,
-		.tp_init = (initproc)PyMetafile_init,
-		.tp_dealloc = (destructor)PyMetafile_dealloc,
-		.tp_methods = PyMetafile_methods,
-		.tp_getset = PyMetafile_getset,
-	};
+	int PyMetafile_set_audio(PyMetafile* self, PyObject* value, void* closure);
+	int PyMetafile_set_video(PyMetafile* self, PyObject* value, void* closure);
+	int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure);
+	
+	extern PyMethodDef PyMetafile_methods[];
+	extern PyGetSetDef PyMetafile_getset[];
+	extern PyTypeObject PyMetafileType;
 
 #ifdef __cplusplus
 }
