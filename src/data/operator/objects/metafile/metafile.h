@@ -25,7 +25,7 @@ extern "C" {
 			char* relation;
 			char* tail;
 		}* ontology;
-		size_t ontology_count;
+		size_t ontology_size;
 
 	} Metafile;
 
@@ -43,6 +43,7 @@ extern "C" {
 	void PyMetafile_dealloc(PyMetafile* self);
 	PyObject* PyMetafile_new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
 	int PyMetafile_init(PyMetafile* self, PyObject* args, PyObject* kwargs);
+	PyObject* PyMetafile_str(PyObject* self);
 
 	PyObject* PyMetafile_get_text(PyMetafile* self, void* closure);
 	PyObject* PyMetafile_get_image(PyMetafile* self, void* closure);

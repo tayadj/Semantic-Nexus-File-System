@@ -25,7 +25,7 @@ void Metafile_free(Metafile* metafile) {
 	}
 
 	if (metafile->ontology) {
-		for (size_t i = 0; i < metafile->ontology_count; ++i) {
+		for (size_t i = 0; i < metafile->ontology_size; ++i) {
 			if (metafile->ontology[i].head) {
 				free(metafile->ontology[i].head);
 			}
@@ -72,7 +72,7 @@ PyObject* PyMetafile_new(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
 		self->metafile->video = NULL;
 		self->metafile->video_size = 0;
 		self->metafile->ontology = NULL;
-		self->metafile->ontology_count = 0;
+		self->metafile->ontology_size = 0;
 	}
 
 	return (PyObject*)self;
@@ -185,7 +185,7 @@ int PyMetafile_init(PyMetafile* self, PyObject* args, PyObject* kwargs) {
 			PyErr_NoMemory();
 			return -1;
 		}
-		self->metafile->ontology_count = (size_t)list_size;
+		self->metafile->ontology_size = (size_t)list_size;
 		for (Py_ssize_t i = 0; i < list_size; ++i) {
 			PyObject* item = PyList_GetItem(py_ontology, i);
 			if (!PyDict_Check(item)) {
@@ -209,6 +209,25 @@ int PyMetafile_init(PyMetafile* self, PyObject* args, PyObject* kwargs) {
 	}
 
 	return 0;
+
+}
+
+PyObject* PyMetafile_str(PyObject* self) {
+
+	PyMetafile* object = (PyMetafile*)self;
+
+	if (object->metafile == NULL) {
+		return PyUnicode_FromString("<Metafile: uninitialized>");
+	}
+
+	return PyUnicode_FromFormat(
+		"<Metafile: text = '%s', image_size = %zu, audio_size = %zu, video_size = %zu, ontology_count = %zu>",
+		(object->metafile->text) ? object->metafile->text : "",
+		object->metafile->image_size,
+		object->metafile->audio_size,
+		object->metafile->video_size,
+		object->metafile->ontology_size
+	);
 
 }
 
@@ -254,13 +273,13 @@ PyObject* PyMetafile_get_video(PyMetafile* self, void* closure) {
 
 PyObject* PyMetafile_get_ontology(PyMetafile* self, void* closure) {
 
-	PyObject* list = PyList_New((Py_ssize_t)self->metafile->ontology_count);
+	PyObject* list = PyList_New((Py_ssize_t)self->metafile->ontology_size);
 
 	if (!list) {
 		return NULL;
 	}
 		
-	for (size_t i = 0; i < self->metafile->ontology_count; ++i) {
+	for (size_t i = 0; i < self->metafile->ontology_size; ++i) {
 		PyObject* dict = PyDict_New();
 		if (!dict) {
 			Py_DECREF(list);
@@ -433,14 +452,14 @@ int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure) {
 	Py_ssize_t list_size = PyList_Size(value);
 
 	if (self->metafile->ontology) {
-		for (size_t i = 0; i < self->metafile->ontology_count; i++) {
+		for (size_t i = 0; i < self->metafile->ontology_size; i++) {
 			free(self->metafile->ontology[i].head);
 			free(self->metafile->ontology[i].relation);
 			free(self->metafile->ontology[i].tail);
 		}
 		free(self->metafile->ontology);
 		self->metafile->ontology = NULL;
-		self->metafile->ontology_count = 0;
+		self->metafile->ontology_size = 0;
 	}
 
 	self->metafile->ontology = malloc(list_size * sizeof(*(self->metafile->ontology)));
@@ -448,7 +467,7 @@ int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure) {
 		PyErr_NoMemory();
 		return -1;
 	}
-	self->metafile->ontology_count = (size_t)list_size;
+	self->metafile->ontology_size = (size_t)list_size;
 
 	for (Py_ssize_t i = 0; i < list_size; ++i) {
 		PyObject* item = PyList_GetItem(value, i); 
@@ -500,4 +519,5 @@ PyTypeObject PyMetafileType = {
 	.tp_dealloc = (destructor)PyMetafile_dealloc,
 	.tp_methods = PyMetafile_methods,
 	.tp_getset = PyMetafile_getset,
+	.tp_str = PyMetafile_str,
 };
