@@ -495,11 +495,11 @@ int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure) {
 }
 
 PyGetSetDef PyMetafile_getset[] = {
-	{"text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "text", NULL},
-	{"image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "image", NULL},
-	{"audio", (getter)PyMetafile_get_audio, (setter)PyMetafile_set_audio, "audio", NULL},
-	{"video", (getter)PyMetafile_get_video, (setter)PyMetafile_set_video, "video", NULL},
-	{"ontology", (getter)PyMetafile_get_ontology, (setter)PyMetafile_set_ontology, "ontology", NULL},
+	{"text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "Textual data", NULL},
+	{"image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "Visual data", NULL},
+	{"audio", (getter)PyMetafile_get_audio, (setter)PyMetafile_set_audio, "Audial data", NULL},
+	{"video", (getter)PyMetafile_get_video, (setter)PyMetafile_set_video, "Video data", NULL},
+	{"ontology", (getter)PyMetafile_get_ontology, (setter)PyMetafile_set_ontology, "Data ontology", NULL},
 	{NULL}
 };
 
@@ -509,7 +509,7 @@ PyMethodDef PyMetafile_methods[] = {
 
 PyTypeObject PyMetafileType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name = "operator.Metafile",
+	.tp_name = "mediator.Metafile",
 	.tp_doc = "Metafile object.",
 	.tp_basicsize = sizeof(PyMetafile),
 	.tp_itemsize = 0,

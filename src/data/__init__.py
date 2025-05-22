@@ -1,1 +1,1 @@
-from .operator import operator
+from .mediator import mediator

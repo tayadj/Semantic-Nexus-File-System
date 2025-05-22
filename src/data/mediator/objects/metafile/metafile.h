@@ -1,5 +1,5 @@
-#ifndef METAFILE_H
-#define METAFILE_H
+#ifndef _DATA_METAFILE_H_
+#define _DATA_METAFILE_H_
 
 #include <Python.h>
 
