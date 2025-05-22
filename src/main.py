@@ -7,4 +7,4 @@ import data
 if __name__ == "__main__":
 
 	settings = config.Settings()
-	# data.mediator.create_file(settings.DATA_STORAGE_URL.get_secret_value() + "/test.metafile", "Some test information", "{}")
+	engine = core.Engine(openai_api_key = settings.OPENAI_API_KEY.get_secret_value())
