@@ -17,4 +17,6 @@ class Engine():
 			self.model = llama_index.llms.openai.OpenAI(model = 'gpt-4.1-nano')
 			llama_index.core.Settings.llm = self.model
 
-		self.ontology_processor = OntologyProcessor()
+		self.ontology_processor = OntologyProcessor() # Contains Ontology RAG strategy
+
+		# Contains LLM+RAG+Nexus strategy and pipelines
