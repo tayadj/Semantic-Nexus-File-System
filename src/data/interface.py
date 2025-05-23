@@ -1,4 +1,5 @@
 import base64
+import llama_index
 import os
 
 from . import mediator
@@ -30,7 +31,19 @@ class Interface:
 			}
 		]
 
-	def build_metafile(self, path):
+		self.ontology_prompt = llama_index.core.prompts.PromptTemplate(
+			"You are tasked with building an ontology from a provided context (delimited by ```). "
+			"Identify atomic key terms (e.g., object, entity, location, organization, person, acronym, concept) in each sentence. "
+			"For terms appearing together in a sentence or paragraph, infer one-to-one relationships and explain each briefly.\n"
+			"Return your results as a JSON list where each item is an object with:\n"
+			"  'head': key term\n"
+			"  'relation': relation description\n"
+			"  'tail': related term\n"
+			"Context: ```{context}```\n"
+			"Output: "
+		)
+
+	async def build_metafile(self, path):
 
 		_, extension = os.path.splitext(path)
 		extension = extension.lower()
@@ -43,9 +56,9 @@ class Interface:
 
 			if extension in rule["extensions"]:
 
-				text, image, audio, video = rule["handler"](data)
+				text, image, audio, video = await rule["handler"](data)
 
-		ontology = self.build_ontology(text)
+		ontology = await self.build_ontology(text)
 
 		metafile = mediator.Metafile(
 			text = text,
@@ -57,33 +70,38 @@ class Interface:
 
 		return metafile
 
-	def handle_text(self, text):
+	async def handle_text(self, text):
 
 		text = text.decode("utf-8", errors = "ignore")
 
 		return (text, None, None, None)
 
-	def handle_image(self, image):
+	async def handle_image(self, image):
 
 		text = ""
 
 		return (text, image, None, None)
 
-	def handle_audio(self, audio):
+	async def handle_audio(self, audio):
 
 		text = ""
 
 		return (text, None, audio, None)
 
-	def handle_video(self, video):
+	async def handle_video(self, video):
 
 		text = ""
 
 		return (text, None, None, video)
 
-	def build_ontology(self, text):
+	async def build_ontology(self, text):
 
-		pass
+		result = await (
+			llama_index.core.Settings.llm
+				.acomplete(self.ontology_prompt.format(context = text))		
+		)
+
+		return json.loads(str(result))
 	
 	def _create_file(self, id, metafile):
 
