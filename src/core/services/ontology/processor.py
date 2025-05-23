@@ -9,12 +9,12 @@ class OntologyProcessor:
 
 		self.prompt = llama_index.core.prompts.PromptTemplate(
 			"You are tasked with building an ontology from a provided context (delimited by ```). "
-			"Identify atomic key terms (e.g., object, entity, location, organization, person, condition, acronym, document, service, concept) in each sentence. "
-			"For terms appearing together in a sentence or paragraph, infer one-to-one relationships and explain each briefly (in 1-2 sentences).\n"
+			"Identify atomic key terms (e.g., object, entity, location, organization, person, acronym, concept) in each sentence. "
+			"For terms appearing together in a sentence or paragraph, infer one-to-one relationships and explain each briefly.\n"
 			"Return your results as a JSON list where each item is an object with:\n"
-			"  'head': first term,\n"
-			"  'relation': brief relation description.\n"
-			"  'tail': related term,\n"
+			"  'head': key term\n"
+			"  'relation': relation description\n"
+			"  'tail': related term\n"
 			"Context: ```{context}```\n"
 			"Output: "
 		)

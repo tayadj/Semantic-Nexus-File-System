@@ -14,5 +14,6 @@ class Settings(pydantic_settings.BaseSettings):
 
 	OPENAI_API_KEY: pydantic.SecretStr
 
-	DATA_STORAGE_URL: pydantic.SecretStr
+	DATA_STORAGE_PREFIX: pydantic.SecretStr
+	DATA_STORAGE_POSTFIX: pydantic.SecretStr
 	

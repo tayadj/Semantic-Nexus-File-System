@@ -8,6 +8,14 @@ extern "C" {
 #endif
 
 	typedef struct {
+		char* head;
+		char* relation;
+		char* tail;
+	} Ontology;
+
+		
+
+	typedef struct {
 
 		char* text;
 
@@ -20,11 +28,7 @@ extern "C" {
 		unsigned char* video;
 		size_t video_size;
 
-		struct {
-			char* head;
-			char* relation;
-			char* tail;
-		}* ontology;
+		Ontology* ontology;
 		size_t ontology_size;
 
 	} Metafile;

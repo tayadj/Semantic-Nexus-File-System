@@ -221,7 +221,7 @@ PyObject* PyMetafile_str(PyObject* self) {
 	}
 
 	return PyUnicode_FromFormat(
-		"<Metafile: text = '%s', image_size = %zu, audio_size = %zu, video_size = %zu, ontology_count = %zu>",
+		"<Metafile: text = '%s', image_size = %zu, audio_size = %zu, video_size = %zu, ontology_size = %zu>",
 		(object->metafile->text) ? object->metafile->text : "",
 		object->metafile->image_size,
 		object->metafile->audio_size,

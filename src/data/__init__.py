@@ -1,1 +1,2 @@
-from .mediator import mediator
+from . import mediator
+from .interface import Interface
