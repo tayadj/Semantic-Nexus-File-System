@@ -6,7 +6,8 @@ module = setuptools.Extension(
 	sources = [
 		os.path.join("module", "module.c"),
 		os.path.join("methods", "atomic", "atomic.c"),
-		os.path.join("objects", "metafile", "metafile.c"),
+		os.path.join("methods", "composite", "composite.c"),
+		os.path.join("objects", "metafile", "metafile.c")
 	]
 )
 

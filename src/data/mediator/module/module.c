@@ -1,5 +1,6 @@
 #include "../objects/metafile/metafile.h"
 #include "../methods/atomic/atomic.h"
+#include "../methods/composite/composite.h"
 
 #include <Python.h>
 
@@ -9,6 +10,7 @@ static PyMethodDef mediator_methods[] = {
 	{"create_file", py_create_file, METH_VARARGS, "Create a file with given id and Metafile object."},
 	{"read_file", py_read_file, METH_VARARGS, "Read a file with given id."},
 	{"delete_file", py_delete_file, METH_VARARGS, "Delete a file with given id."},
+	{"aggregate_ontology", py_aggregate_ontology, METH_VARARGS, "Aggregate file system ontology with given id."},
 	{NULL, NULL, 0, NULL}
 };
 
