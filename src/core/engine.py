@@ -2,7 +2,7 @@ import llama_index
 import llama_index.llms.openai
 import os
 
-from .services import OntologyProcessor
+from .services import OntologyProcessor, SearchProcessor
 
 
 
@@ -17,6 +17,9 @@ class Engine():
 			self.model = llama_index.llms.openai.OpenAI(model = 'gpt-4.1-nano')
 			llama_index.core.Settings.llm = self.model
 
-		self.ontology_processor = OntologyProcessor() # Contains Ontology RAG strategy
+		self.ontology_processor = OntologyProcessor()
+		self.search_processor = SearchProcessor()
 
-		# Contains LLM+RAG+Nexus strategy and pipelines
+	def query(self):
+
+		pass

@@ -115,7 +115,7 @@ class Interface:
 		
 		mediator.delete_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}")
 
-	def _aggregate_ontology(self, id):
+	def _aggregate_ontology(self):
 
-		return mediator.aggregate_ontology(id)
+		return mediator.aggregate_ontology(self.data_storage_prefix)
 
