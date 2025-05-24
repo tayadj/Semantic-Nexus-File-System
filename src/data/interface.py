@@ -18,15 +18,15 @@ class Interface:
 				"handler": self.handle_text
 			},
 			{
-				"extensions": (".jpg", ".jpeg", ".png"),
+				"extensions": (),
 				"handler": self.handle_image
 			},
 			{
-				"extensions": (".mp3"),
+				"extensions": (),
 				"handler": self.handle_audio
 			},
 			{
-				"extensions": (".mp4"),
+				"extensions": (),
 				"handler": self.handle_video
 			}
 		]

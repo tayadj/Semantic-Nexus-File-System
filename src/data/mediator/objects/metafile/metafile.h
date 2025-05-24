@@ -13,7 +13,9 @@ extern "C" {
 		char* tail;
 	} Ontology;
 
-		
+	void Ontology_free(Ontology* ontology);
+
+
 
 	typedef struct {
 

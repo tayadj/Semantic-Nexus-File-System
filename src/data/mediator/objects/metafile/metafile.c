@@ -2,39 +2,32 @@
 
 
 
+void Ontology_free(Ontology* ontology) {
+
+	if (!ontology) {
+		return;
+	}
+
+	free(ontology->head);
+	free(ontology->relation);
+	free(ontology->tail);
+
+}
+
 void Metafile_free(Metafile* metafile) {
 
 	if (!metafile) {
 		return;
 	} 
 
-	if (metafile->text) {
-		free(metafile->text);
-	}
-
-	if (metafile->image) {
-		free(metafile->image);
-	}
-
-	if (metafile->audio) {
-		free(metafile->audio);
-	}
-
-	if (metafile->video) {
-		free(metafile->video);
-	}
+	free(metafile->text);
+	free(metafile->image);
+	free(metafile->audio);
+	free(metafile->video);
 
 	if (metafile->ontology) {
 		for (size_t i = 0; i < metafile->ontology_size; ++i) {
-			if (metafile->ontology[i].head) {
-				free(metafile->ontology[i].head);
-			}
-			if (metafile->ontology[i].relation) {
-				free(metafile->ontology[i].relation);
-			}
-			if (metafile->ontology[i].tail) {
-				free(metafile->ontology[i].tail);
-			}
+			Ontology_free(&metafile->ontology[i]);
 		}
 		free(metafile->ontology);
 	}
