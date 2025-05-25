@@ -5,7 +5,28 @@ import os
 from . import mediator
 
 
-class Interface:
+
+class Adapter:
+
+	def _create_file(self, id, metafile):
+
+		mediator.create_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}", metafile)
+
+	def _read_file(self, id):
+
+		return mediator.read_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}")
+
+	def _delete_file(self, id):
+		
+		mediator.delete_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}")
+
+	def _aggregate_ontology(self):
+
+		return mediator.aggregate_ontology(self.data_storage_prefix)
+
+
+
+class Interface(Adapter):
 
 	def __init__(self, settings):
 
@@ -70,6 +91,15 @@ class Interface:
 
 		return metafile
 
+	async def build_ontology(self, text):
+
+		result = await (
+			llama_index.core.Settings.llm
+				.acomplete(self.ontology_prompt.format(context = text))		
+		)
+
+		return json.loads(str(result))
+
 	async def handle_text(self, text):
 
 		text = text.decode("utf-8", errors = "ignore")
@@ -93,29 +123,4 @@ class Interface:
 		text = ""
 
 		return (text, None, None, video)
-
-	async def build_ontology(self, text):
-
-		result = await (
-			llama_index.core.Settings.llm
-				.acomplete(self.ontology_prompt.format(context = text))		
-		)
-
-		return json.loads(str(result))
 	
-	def _create_file(self, id, metafile):
-
-		mediator.create_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}", metafile)
-
-	def _read_file(self, id):
-
-		return mediator.read_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}")
-
-	def _delete_file(self, id):
-		
-		mediator.delete_file(f"{self.data_storage_prefix}/{id}{self.data_storage_postfix}")
-
-	def _aggregate_ontology(self):
-
-		return mediator.aggregate_ontology(self.data_storage_prefix)
-
