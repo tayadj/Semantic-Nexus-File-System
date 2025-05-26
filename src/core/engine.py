@@ -26,6 +26,19 @@ class Engine():
 		aggregated_ontology = self.data_interface._aggregate_ontology()
 		self.ontology_processor.build(aggregated_ontology)
 
-	def query(self):
+	async def query(self, query):
 
-		pass
+		ontology_context = await self.ontology_processor
+		.process(query)
+
+		prompt = (
+			f"User query: {query}\n"
+			f"Relevant information from knowledge database: {ontology_context}\n"
+			"Answer:"
+		)
+
+		print(prompt,'\n\n\n')
+
+		answer = await self.model.acomplete(prompt)
+
+		return answer
