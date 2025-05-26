@@ -1,5 +1,5 @@
-#ifndef _DATA_OPERATOR_ATOMIC_H_
-#define _DATA_OPERATOR_ATOMIC_H_
+#ifndef _DATA_MEDIATOR_ATOMIC_H_
+#define _DATA_MEDIATOR_ATOMIC_H_
 
 #include "../../objects/metafile/metafile.h"
 

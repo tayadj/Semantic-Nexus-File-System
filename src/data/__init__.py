@@ -1,1 +1,1 @@
-from .operator import operator
+from .interface import Interface

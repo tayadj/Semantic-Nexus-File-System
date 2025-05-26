@@ -1,4 +1,5 @@
 import config
+import core
 import data
 
 
@@ -6,4 +7,9 @@ import data
 if __name__ == "__main__":
 
 	settings = config.Settings()
-	# data.operator.create_file(settings.DATA_STORAGE_URL.get_secret_value() + "/test.metafile", "Some test information", "{}")
+
+	engine = core.Engine(
+		data.Interface(settings),
+		openai_api_key = settings.OPENAI_API_KEY.get_secret_value()
+	)
+	engine.setup()

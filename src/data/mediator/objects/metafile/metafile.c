@@ -2,39 +2,32 @@
 
 
 
+void Ontology_free(Ontology* ontology) {
+
+	if (!ontology) {
+		return;
+	}
+
+	free(ontology->head);
+	free(ontology->relation);
+	free(ontology->tail);
+
+}
+
 void Metafile_free(Metafile* metafile) {
 
 	if (!metafile) {
 		return;
 	} 
 
-	if (metafile->text) {
-		free(metafile->text);
-	}
-
-	if (metafile->image) {
-		free(metafile->image);
-	}
-
-	if (metafile->audio) {
-		free(metafile->audio);
-	}
-
-	if (metafile->video) {
-		free(metafile->video);
-	}
+	free(metafile->text);
+	free(metafile->image);
+	free(metafile->audio);
+	free(metafile->video);
 
 	if (metafile->ontology) {
 		for (size_t i = 0; i < metafile->ontology_size; ++i) {
-			if (metafile->ontology[i].head) {
-				free(metafile->ontology[i].head);
-			}
-			if (metafile->ontology[i].relation) {
-				free(metafile->ontology[i].relation);
-			}
-			if (metafile->ontology[i].tail) {
-				free(metafile->ontology[i].tail);
-			}
+			Ontology_free(&metafile->ontology[i]);
 		}
 		free(metafile->ontology);
 	}
@@ -221,7 +214,7 @@ PyObject* PyMetafile_str(PyObject* self) {
 	}
 
 	return PyUnicode_FromFormat(
-		"<Metafile: text = '%s', image_size = %zu, audio_size = %zu, video_size = %zu, ontology_count = %zu>",
+		"<Metafile: text = '%s', image_size = %zu, audio_size = %zu, video_size = %zu, ontology_size = %zu>",
 		(object->metafile->text) ? object->metafile->text : "",
 		object->metafile->image_size,
 		object->metafile->audio_size,
@@ -495,11 +488,11 @@ int PyMetafile_set_ontology(PyMetafile* self, PyObject* value, void* closure) {
 }
 
 PyGetSetDef PyMetafile_getset[] = {
-	{"text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "text", NULL},
-	{"image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "image", NULL},
-	{"audio", (getter)PyMetafile_get_audio, (setter)PyMetafile_set_audio, "audio", NULL},
-	{"video", (getter)PyMetafile_get_video, (setter)PyMetafile_set_video, "video", NULL},
-	{"ontology", (getter)PyMetafile_get_ontology, (setter)PyMetafile_set_ontology, "ontology", NULL},
+	{"text", (getter)PyMetafile_get_text, (setter)PyMetafile_set_text, "Textual data", NULL},
+	{"image", (getter)PyMetafile_get_image, (setter)PyMetafile_set_image, "Visual data", NULL},
+	{"audio", (getter)PyMetafile_get_audio, (setter)PyMetafile_set_audio, "Audial data", NULL},
+	{"video", (getter)PyMetafile_get_video, (setter)PyMetafile_set_video, "Video data", NULL},
+	{"ontology", (getter)PyMetafile_get_ontology, (setter)PyMetafile_set_ontology, "Data ontology", NULL},
 	{NULL}
 };
 
@@ -509,7 +502,7 @@ PyMethodDef PyMetafile_methods[] = {
 
 PyTypeObject PyMetafileType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name = "operator.Metafile",
+	.tp_name = "mediator.Metafile",
 	.tp_doc = "Metafile object.",
 	.tp_basicsize = sizeof(PyMetafile),
 	.tp_itemsize = 0,

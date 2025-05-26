@@ -1,11 +1,21 @@
-#ifndef METAFILE_H
-#define METAFILE_H
+#ifndef _DATA_METAFILE_H_
+#define _DATA_METAFILE_H_
 
 #include <Python.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+	typedef struct {
+		char* head;
+		char* relation;
+		char* tail;
+	} Ontology;
+
+	void Ontology_free(Ontology* ontology);
+
+
 
 	typedef struct {
 
@@ -20,11 +30,7 @@ extern "C" {
 		unsigned char* video;
 		size_t video_size;
 
-		struct {
-			char* head;
-			char* relation;
-			char* tail;
-		}* ontology;
+		Ontology* ontology;
 		size_t ontology_size;
 
 	} Metafile;
