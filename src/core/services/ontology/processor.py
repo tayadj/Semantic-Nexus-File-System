@@ -1,6 +1,8 @@
 import llama_index
 import networkx
 
+from .alignment import ontology_alignment
+
 
 
 class OntologyProcessor:
@@ -13,9 +15,9 @@ class OntologyProcessor:
 
 	def create_entity(self, entity: dict):
 	
-		head = entity.get("head")
+		head = ontology_alignment(entity.get("head"))
 		relation = entity.get("relation")
-		tail = entity.get("tail")
+		tail = ontology_alignment(entity.get("tail"))
 
 		if not self.graph.has_node(head):
 
@@ -29,9 +31,9 @@ class OntologyProcessor:
 
 	def delete_entity(self, entity: dict):
 
-		head = entity.get("head")
+		head = ontology_alignment(entity.get("head"))
 		relation = entity.get("relation")
-		tail = entity.get("tail")
+		tail = ontology_alignment(entity.get("tail"))
 
 		if self.graph.has_edge(head, tail):
 			
