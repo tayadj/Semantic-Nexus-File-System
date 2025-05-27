@@ -25,7 +25,7 @@ class OntologyProcessor:
 
 			self.graph.add_node(tail)
 
-		self.graph.add_edge(head, tail, relation = relation)
+		self.graph.add_edge(head, tail, title = relation, relation = relation)
 
 	def delete_entity(self, entity: dict):
 
