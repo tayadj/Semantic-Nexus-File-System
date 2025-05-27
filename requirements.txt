@@ -1,5 +1,6 @@
 llama-index==0.12.37
 llama-index-llms-openai==0.3.43
+networkx==3.4.2
 pydantic==2.11.4
 pydantic-settings==2.9.1
 setuptools==80.8.0
