@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-	Ontology* aggregate_ontology(const char* id);
+	Ontology* aggregate_ontology(const char* id, size_t* size);
 
 	PyObject* py_aggregate_ontology(PyObject* self, PyObject* args);
 
