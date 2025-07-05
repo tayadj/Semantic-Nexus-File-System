@@ -5,22 +5,38 @@ class Tokenizer:
 
 	def __init__(self):
 
+		self.token_padding = "<PADDING>"
+		self.token_unknown = "<UNKNOWN>"
+		self.index_padding = None
+		self.index_unknown = None
+		self.size = None
+
 		self.token_to_index = {}
 		self.index_to_token = {}
 
-	@property
-	def size(self):
+	def tokenize(self, text):
 
-		return len(self.token_to_index)
+		return text.split()
 
 	def fit(self, corpus):
 
-		vocabulary = {token for text in corpus for token in text.split()}
+		vocabulary = { token for text in corpus for token in self.tokenize(text) }
 
-		self.token_to_index = { word : index for index, word in enumerate(vocabulary, start = 1) }
-		self.token_to_index["<PADDING>"] = 0
+		self.token_to_index = { word : index for index, word in enumerate(vocabulary, start = 2) }
+		self.token_to_index[self.token_padding] = 0
+		self.token_to_index[self.token_unknown] = 1
 
-		self.index_to_token = { index : word for index, word in enumerate(vocabulary, start = 1) }
-		self.index_to_token[0] = ["<PADDING>"]
+		self.index_to_token = { index : word for index, word in enumerate(vocabulary, start = 2) }
+		self.index_to_token[0] = self.token_padding
+		self.index_to_token[1] = self.token_unknown
 
-		# Implement service token general support
+		self.size = len(self.token_to_index)
+		self.index_padding = 0
+		self.index_unknown = 1
+
+	def encode(self, text):
+
+		tokens = self.tokenize(text)
+		indices = [ self.token_to_index.get(token, self.index_unknown) for token in tokens ]
+
+		return indices

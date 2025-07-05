@@ -5,4 +5,4 @@ class Engine:
 
 	def __init__(self):
 
-		self.vectorizer = Vectorizer()
+		self.vectorizer = Vectorizer(dimension = 128)

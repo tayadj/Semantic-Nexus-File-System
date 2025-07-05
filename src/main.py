@@ -1,4 +1,4 @@
-import core
+﻿import core
 
 corpus = [
 	"While eating at a restaurant is an enjoyable and convenient occasional treat, most individuals and families prepare their meals at home.",
@@ -6,6 +6,6 @@ corpus = [
 ]
 
 engine = core.Engine()
-engine.vectorizer.tokenizer.fit(corpus)
+engine.vectorizer.fit(corpus)
 
 print(engine.vectorizer.tokenizer.token_to_index)
