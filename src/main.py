@@ -9,3 +9,4 @@ engine = core.Engine()
 engine.vectorizer.fit(corpus)
 
 print(engine.vectorizer.tokenizer.token_to_index)
+print(engine.sentiment.vectorizer.tokenizer.size)

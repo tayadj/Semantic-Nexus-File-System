@@ -1,5 +1,7 @@
 import torch
-from .tokenizer import Tokenizer
+
+from core.nexus.services.vectorizer import Tokenizer
+
 
 
 class Vectorizer(torch.nn.Module):
