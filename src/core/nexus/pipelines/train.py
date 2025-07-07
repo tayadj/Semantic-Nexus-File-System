@@ -77,6 +77,9 @@ def train(model, vectorizer, device):
 				for sequence in indices
 			]
 
+			# Double encoding-decoding
+			# Remove convertation within the Dataset class in order to avoid this?
+
 			logits = model(batch)
 			loss = criterion(logits, labels.to(device))
 

@@ -16,6 +16,8 @@ class Tokenizer:
 
 	def tokenize(self, text):
 
+		text = text.lower()	
+
 		return text.split()
 
 	def fit(self, corpus):
