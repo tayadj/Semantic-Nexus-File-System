@@ -14,16 +14,16 @@ engine.vectorizer.fit(corpus)
 
 print(engine.sentiment.vectorizer.tokenizer.size)
 
-core.nexus.pipelines.train(engine.sentiment, engine.vectorizer, engine.device)
+core.nexus.pipelines.train(engine.sentiment, engine.device)
 
 texts = [
-	"Good",
+	"Good, thank you!",
 	"Terrible",
 	"Amazing"
 ]
 
 for text in texts:
 
-	print(f"{text}: {engine.vectorizer.tokenizer.encode(text.lower())}")
+	print(f"{text} [{engine.vectorizer.tokenizer.preprocess(text)}]: {engine.vectorizer.tokenizer.encode(engine.vectorizer.tokenizer.preprocess(text))}")
 
 core.nexus.pipelines.inference(engine.sentiment, texts)

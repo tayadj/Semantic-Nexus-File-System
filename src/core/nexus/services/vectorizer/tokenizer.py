@@ -1,3 +1,4 @@
+import re
 
 
 
@@ -14,9 +15,17 @@ class Tokenizer:
 		self.token_to_index = {}
 		self.index_to_token = {}
 
+	def preprocess(self, text):
+
+		text = text.lower()
+		text = re.sub(r'([.,!?;:"(){}\[\]])', r' \1 ', text)
+		text = re.sub(r'\s+', ' ', text).strip()
+
+		return text
+
 	def tokenize(self, text):
 
-		text = text.lower()	
+		text = self.preprocess(text)
 
 		return text.split()
 

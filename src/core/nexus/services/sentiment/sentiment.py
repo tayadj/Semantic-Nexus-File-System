@@ -23,11 +23,10 @@ class Sentiment(torch.nn.Module):
 
 	class Dataset(torch.utils.data.Dataset):
 
-		def __init__(self, texts, labels, tokenizer):
+		def __init__(self, texts, labels):
 
 			self.texts = texts
 			self.labels = labels
-			self.tokenizer = tokenizer
 
 		def __len__(self):
 
@@ -35,14 +34,13 @@ class Sentiment(torch.nn.Module):
 
 		def __getitem__(self, index):
 
-			indices = torch.LongTensor(self.tokenizer.encode(self.texts[index]))
+			text = self.texts[index]
 			label = torch.tensor(self.labels[index], dtype = torch.long)
 
-			return indices, label
+			return text, label
 
 		def collate(self, batch):
 
 			texts, labels = zip(*batch)
-			padded = torch.nn.utils.rnn.pad_sequence(texts, batch_first = True, padding_value = 0)
 
-			return padded, torch.stack(labels)
+			return list(texts), torch.stack(labels)
