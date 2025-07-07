@@ -5,11 +5,11 @@ import core
 
 
 
+engine = core.Engine()
+
 corpus_path = os.path.dirname(__file__) + "/storage/corpus.json"
 corpus = pandas.read_json(corpus_path, orient = "records")
 corpus = corpus["text"].tolist()
-
-engine = core.Engine()
 engine.vectorizer.fit(corpus)
 
 print(f"Vocabulary size: {engine.sentiment.vectorizer.tokenizer.size} tokens")
@@ -26,10 +26,18 @@ sentiment = pandas.DataFrame(
 core.nexus.pipelines.train(engine.sentiment, sentiment, engine.device)
 
 texts = [
-	"Good, thank you!",
-	"Terrible",
-	"Amazing"
+    "I love coffee on rainy mornings.",
+    "This traffic jam is so frustrating.",
+    "Absolutely delighted with the surprise party!",
+    "I'm feeling under the weather today.",
+    "What an amazing performance that was.",
+    "I can't stand this noise anymore.",
+    "The weather is perfect for a walk.",
+    "I feel completely let down by this outcome.",
+    "Everything turned out better than expected!",
+    "I'm so bored right now."
 ]
+
 
 for text in texts:
 
