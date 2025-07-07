@@ -18,7 +18,7 @@ class Tokenizer:
 	def preprocess(self, text):
 
 		text = text.lower()
-		text = re.sub(r'([.,!?;:"(){}\[\]])', r' \1 ', text)
+		text = re.sub(r'([.,!?;:"\'(){}\[\]])', r' \1 ', text)
 		text = re.sub(r'\s+', ' ', text).strip()
 
 		return text

@@ -12,9 +12,18 @@ corpus = corpus["text"].tolist()
 engine = core.Engine()
 engine.vectorizer.fit(corpus)
 
-print(engine.sentiment.vectorizer.tokenizer.size)
+print(f"Vocabulary size: {engine.sentiment.vectorizer.tokenizer.size} tokens")
 
-core.nexus.pipelines.train(engine.sentiment, engine.device)
+sentiment_path = os.path.dirname(__file__) + "/storage/sentiment.json" 
+sentiment = pandas.read_json(sentiment_path, orient = "records")
+sentiment = pandas.DataFrame(
+	{
+		"input": sentiment["text"],
+		"output": sentiment["sentiment"]
+	}
+)
+
+core.nexus.pipelines.train(engine.sentiment, sentiment, engine.device)
 
 texts = [
 	"Good, thank you!",

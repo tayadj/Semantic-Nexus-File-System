@@ -9,8 +9,8 @@ class Sentiment(torch.nn.Module):
 		super().__init__()
 
 		self.vectorizer = vectorizer
-		self.hidden = torch.nn.Linear(vectorizer.dimension, 32)
-		self.output = torch.nn.Linear(32, 2)
+		self.hidden = torch.nn.Linear(vectorizer.dimension, 128)
+		self.output = torch.nn.Linear(128, 2)
 
 	def forward(self, texts):
 
