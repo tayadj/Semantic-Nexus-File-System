@@ -8,3 +8,6 @@ build/
 
 # Environment settings
 .env
+
+# Storage
+storage/

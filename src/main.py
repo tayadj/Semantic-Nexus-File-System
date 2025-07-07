@@ -43,6 +43,16 @@ corpus = [
 	"incredible value",
 	"not as described",
 	"truly enjoyable",
+	"this is amazing",
+	"really terrible experience",
+	"I absolutely loved the support I received",
+	"I'm completely fed up with this service",
+	"best meal I've had in ages",
+	"it's a total disaster",
+	"thrilled by the efficiency of this tool",
+	"extremely disappointed with the outcome",
+	"I couldn't be happier with my purchase",
+	"I've never been so frustrated"
 ]
 
 engine = core.Engine()
@@ -51,105 +61,19 @@ engine.vectorizer.fit(corpus)
 print(engine.vectorizer.tokenizer.token_to_index)
 print(engine.sentiment.vectorizer.tokenizer.size)
 
-
-
-sentiment_texts = [
-	"very bad",
-	"amazing",
-	"terrible service",
-	"I love this product",
-	"worst experience ever",
-	"best purchase I've made",
-	"I hate it",
-	"highly recommend",
-	"not worth the money",
-	"absolutely fantastic",
-	"very disappointing",
-	"exceeded my expectations",
-	"I will never buy this again",
-	"superb quality",
-	"it's awful",
-	"I'm so happy with this",
-	"complete waste",
-	"incredible value",
-	"not as described",
-	"truly enjoyable",
-]
-
-sentiment_labels = [
-	0,  
-	1,  
-	0,  
-	1,  
-	0,  
-	1, 
-	0,  
-	1,  
-	0,  
-	1,  
-	0,  
-	1,  
-	0,  
-	1,  
-	0, 
-	1, 
-	0, 
-	1,  
-	0, 
-	1, 
-]
-
-device = torch.device("cpu")
-engine.sentiment.to(device)
-
-dataset = core.nexus.services.sentiment.Dataset(sentiment_texts, sentiment_labels, engine.vectorizer.tokenizer)
-loader = torch.utils.data.DataLoader(dataset, batch_size = 2, shuffle = True, collate_fn = core.nexus.services.sentiment.collate)
-
-optimizer = torch.optim.Adam(engine.sentiment.parameters(), lr = 1e-3)
-criterion = torch.nn.CrossEntropyLoss()
-
-engine.sentiment.train()
-epochs = 10
-
-for epoch in range(1, epochs + 1):
-
-	total_loss = 0.0
-
-	for indices, labels in loader:
-
-		batch = [
-			" ".join(engine.vectorizer.tokenizer.index_to_token[index.item()]
-			for index in sequence if index.item() != engine.vectorizer.tokenizer.index_padding)
-			for sequence in indices
-		]
-
-		logits = engine.sentiment(batch)
-		loss = criterion(logits, labels.to(device))
-
-		optimizer.zero_grad()
-		loss.backward()
-		optimizer.step()
-		total_loss += loss.item()
-
-	average_loss = total_loss / len(loader)
-
-	print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
-
-
-
-engine.sentiment.eval()
+core.nexus.pipelines.train(engine.sentiment, engine.vectorizer, engine.device)
 
 texts = [
-	"this is amazing",
-	"really terrible experience"
+		"this is amazing",
+		"really terrible experience",
+		"I absolutely loved the support I received",
+		"I'm completely fed up with this service",
+		"best meal I've had in ages",
+		"it's a total disaster",
+		"thrilled by the efficiency of this tool",
+		"extremely disappointed with the outcome",
+		"I couldn't be happier with my purchase",
+		"I've never been so frustrated"
 ]
 
-with torch.no_grad():
-
-	logits = engine.sentiment(texts)
-	probabilities = torch.nn.functional.softmax(logits, dim = 1)
-	predictions = torch.argmax(probabilities, dim = 1)
-
-for text, probability, prediction in zip(texts, probabilities, predictions):
-
-	print(f"\"{text}\" -> {prediction} ({probability})")
+core.nexus.pipelines.inference(engine.sentiment, texts)

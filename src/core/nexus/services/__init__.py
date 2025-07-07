@@ -1,2 +1,2 @@
 from .vectorizer import Vectorizer
-from .sentiment import Sentiment, Dataset, collate
+from .sentiment import Sentiment
