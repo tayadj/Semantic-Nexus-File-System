@@ -1,3 +1,4 @@
+import copy
 import torch
 
 from core.nexus.services.vectorizer import Tokenizer
@@ -10,10 +11,30 @@ class Vectorizer(torch.nn.Module):
 
 		super().__init__()
 
+		self.dimension = dimension
+
 		self.tokenizer = Tokenizer()
 		self.embedding = None
 
-		self.dimension = dimension
+	def __deepcopy__(self, memo):
+
+		instance = self.__class__(self.dimension)
+
+		memo[id(self)] = instance
+
+		instance.dimension = self.dimension
+		instance.tokenizer = self.tokenizer
+
+		instance.embedding = torch.nn.Embedding(
+			num_embeddings = self.embedding.num_embeddings,
+			embedding_dim = self.embedding.embedding_dim,
+			padding_idx = self.embedding.padding_idx
+		)
+
+		state = copy.deepcopy(self.embedding.state_dict(), memo)
+		instance.embedding.load_state_dict(state)
+
+		return instance
 
 	def fit(self, corpus):
 
