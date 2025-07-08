@@ -2,7 +2,7 @@ import torch
 
 
 
-class Sentiment(torch.nn.Module):
+class Sentifier(torch.nn.Module):
 
 	def __init__(self, vectorizer):
 
