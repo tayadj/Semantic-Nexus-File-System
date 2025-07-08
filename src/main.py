@@ -14,7 +14,6 @@ engine.build(corpus)
 
 print(f"Vocabulary size: {engine.sentiment.vectorizer.tokenizer.size} tokens")
 
-'''
 sentiment_path = os.path.dirname(__file__) + "/storage/sentiment.json" 
 sentiment = pandas.read_json(sentiment_path, orient = "records")
 sentiment = pandas.DataFrame(
@@ -39,10 +38,8 @@ texts = [
     "I'm so bored right now."
 ]
 
-
 for text in texts:
 
 	print(f"{text} [{engine.vectorizer.tokenizer.preprocess(text)}]: {engine.vectorizer.tokenizer.encode(engine.vectorizer.tokenizer.preprocess(text))}")
 
-core.nexus.pipelines.inference(engine.sentiment, texts)
-'''
+core.nexus.pipelines.inference(engine.sentiment, texts, engine.device)

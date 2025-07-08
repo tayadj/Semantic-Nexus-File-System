@@ -15,6 +15,7 @@ class Sentiment(torch.nn.Module):
 	def forward(self, texts):
 
 		x = self.vectorizer(texts)
+		x = x.mean(dim = 1)
 		x = self.hidden(x)
 		x = torch.relu(x)
 		x = self.output(x)

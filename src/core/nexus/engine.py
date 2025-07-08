@@ -11,6 +11,8 @@ class Engine:
 
 		self.vectorizer = Vectorizer(dimension = 128)
 		self.sentiment = None
+
+		self.device = torch.device("cpu")
 		
 	def build(self, corpus):
 

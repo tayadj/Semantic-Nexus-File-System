@@ -51,4 +51,4 @@ class Vectorizer(torch.nn.Module):
 		padded = torch.nn.utils.rnn.pad_sequence(batches, batch_first = True, padding_value = self.tokenizer.index_padding)
 		embedding = self.embedding(padded)
 
-		return embedding.mean(dim = 1)
+		return embedding

@@ -2,8 +2,9 @@ import torch
 
 
 
-def inference(model, data):
+def inference(model, data, device):
 
+	model.to(device)
 	model.eval()
 
 	with torch.no_grad():
