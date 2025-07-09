@@ -16,7 +16,7 @@ class Entifier(torch.nn.Module):
 			batch_first = True,
 			bidirectional = True
 		)
-		self.output = torch.nn.Linear(128 * 2, 8) # NER_size
+		self.output = torch.nn.Linear(128 * 2, 18) # NER_size
 
 	def forward(self, texts):
 
@@ -49,6 +49,6 @@ class Entifier(torch.nn.Module):
 			texts, labels = zip(*batch)
 
 			labels = [torch.LongTensor(label) for label in labels]
-			labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first = True, padding_value = 7) # NER_padding_value
+			labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first = True, padding_value = 17) # NER_padding_value
 
 			return list(texts), labels

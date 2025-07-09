@@ -31,7 +31,7 @@ def inference_entifier(model, data, device, mapping):
 	for record, probability, prediction in zip(data, probabilities, predictions):
 
 		prediction = prediction[:len(model.vectorizer.tokenizer.tokenize(record))]
-		tags = [mapping[int(index)] for index in prediction]
+		tags = [mapping.get(int(index), "<PAD>") for index in prediction]
 
 		print(f"\"{record}\" -> {tags}")
 
