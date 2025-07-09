@@ -13,7 +13,7 @@ def train_sentifier(model, data, device):
 	optimizer = torch.optim.Adam(model.parameters(), lr = 1e-3)
 	criterion = torch.nn.CrossEntropyLoss()
 
-	epochs = 10
+	epochs = 1
 
 	for epoch in range(1, epochs + 1):
 
@@ -44,25 +44,20 @@ def train_entifier(model, data, device):
 	model.train()
 
 	dataset = model.Dataset(data["input"].tolist(), data["output"].tolist())
-	loader = torch.utils.data.DataLoader(dataset, batch_size = 2, shuffle = True, collate_fn = dataset.collate)
+	loader = torch.utils.data.DataLoader(dataset, batch_size = 8, shuffle = True, collate_fn = dataset.collate)
 
 	optimizer = torch.optim.Adam(model.parameters(), lr = 1e-3)
 	criterion = torch.nn.CrossEntropyLoss(ignore_index = 17) # NER_padding_index
 
-	epochs = 10
+	epochs = 1
 
 	for epoch in range(1, epochs + 1):
 
 		total_loss = 0.0
 
-		count = 0 # to remove for full-training
+		err_counter = 0
 
 		for texts, labels in loader:
-
-			count += 1
-			if count == 1000:
-
-				break
 
 			try:
 
@@ -83,10 +78,9 @@ def train_entifier(model, data, device):
 
 			except Exception as exception:
 
-				pass
-				# print(exception, '\n', texts, labels, "\n\n\n")
+				err_counter += 8 # batch_size
 
-		average_loss = total_loss / 1000 # len(loader)
+		average_loss = total_loss / (len(loader) - err_counter) 
 
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 
