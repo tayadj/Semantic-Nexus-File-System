@@ -52,7 +52,7 @@ texts = [
 	"Mary works since April 2005.",
 	"Google is based in Mountain View"
 ]
-core.nexus.pipelines.inference_entifier(engine.entifier, texts, engine.device, config.entifier.index_to_NER)
+core.nexus.pipelines.inference_entifier(engine.entifier, texts, engine.device, config.entifier)
 '''
 
 engine = core.Engine()
@@ -81,6 +81,7 @@ texts = [
 	"Mary works since April 2005.",
 	"Google is based in Mountain View"
 ]
-core.nexus.pipelines.inference_entifier(engine.entifier, texts, engine.device, config.entifier.index_to_NER)
+core.nexus.pipelines.inference_entifier(engine.entifier, texts, engine.device, config.entifier)
 '''
+
 

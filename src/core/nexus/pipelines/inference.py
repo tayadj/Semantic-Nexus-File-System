@@ -17,7 +17,7 @@ def inference_sentifier(model, data, device):
 
 		print(f"\"{record}\" -> {prediction} ({probability})")
 
-def inference_entifier(model, data, device, mapping):
+def inference_entifier(model, data, device, config):
 
 	model.to(device)
 	model.eval()
@@ -31,7 +31,7 @@ def inference_entifier(model, data, device, mapping):
 	for record, probability, prediction in zip(data, probabilities, predictions):
 
 		prediction = prediction[:len(model.vectorizer.tokenizer.tokenize(record))]
-		tags = [mapping.get(int(index), "<PAD>") for index in prediction]
+		tags = [config.index_to_NER.get(int(index), "<PAD>") for index in prediction]
 
 		print(f"\"{record}\" -> {tags}")
 
