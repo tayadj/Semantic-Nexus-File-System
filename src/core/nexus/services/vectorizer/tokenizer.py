@@ -15,11 +15,44 @@ class Tokenizer:
 		self.token_to_index = {}
 		self.index_to_token = {}
 
+		self.protected_patterns = [
+			("<TIME>", re.compile(r"\b\d{1,2}:\d{2}(?::\d{2})?\b")),
+			("<MERIDIEM>", re.compile(r"(?<!\w)(?:am|pm|a\.m\.|p\.m\.)(?!\w)", re.IGNORECASE)),
+			("<DECIMAL>", re.compile(r"\b\d+\.\d+\b")),
+			("<URL>", re.compile(r"https?://[^\s]+")),
+			("<EMAIL>", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b"))
+		]
+		self.contractions = ["s","re","ve","ll","d","t", "m"]
+
 	def preprocess(self, text):
 
 		text = text.lower()
-		text = re.sub(r'([.,!?;:"\'(){}\[\]])', r' \1 ', text)
+		text = re.sub(r"(\w+)('(?:" + "|".join(self.contractions) + r"))\b", r"\1 \2", text)
+
+		placeholders = {}
+
+		for index, (tag, pattern) in enumerate(self.protected_patterns):
+
+			def replace(match):
+
+				key = f"__{tag}{index}__"
+				placeholders[key] = match.group(0)
+
+				return key
+
+			text = pattern.sub(replace, text)
+
+		regex = re.compile(
+			r"([.,!?;:\"()\[\]{}]"
+			r"|'(?!"+ "|".join(self.contractions) + r"\b))"
+		)
+
+		text = regex.sub(r" \1 ", text)
 		text = re.sub(r'\s+', ' ', text).strip()
+
+		for key, original in placeholders.items():
+		
+			text = text.replace(key, original)
 
 		return text
 

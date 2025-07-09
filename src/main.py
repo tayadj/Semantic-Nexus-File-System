@@ -14,8 +14,6 @@ engine.build(corpus)
 
 print(f"Vocabulary size: {engine.sentifier.vectorizer.tokenizer.size} tokens")
 
-
-'''
 sentiment_path = os.path.dirname(__file__) + "/storage/sentiment.json" 
 sentiment = pandas.read_json(sentiment_path, orient = "records")
 sentiment = pandas.DataFrame(
@@ -45,8 +43,6 @@ for text in texts:
 	print(f"{text} [{engine.vectorizer.tokenizer.preprocess(text)}]: {engine.vectorizer.tokenizer.encode(engine.vectorizer.tokenizer.preprocess(text))}")
 
 core.nexus.pipelines.inference_sentifier(engine.sentifier, texts, engine.device)
-'''
-
 
 NER_to_index = {"O": 0, "B-PERSON": 1, "I-PERSON": 2, "B-LOCATION": 3, "I-LOCATION": 4, "B-TIME": 5, "I-TIME": 6}
 index_to_NER = {index: tag for tag, index in NER_to_index.items()}

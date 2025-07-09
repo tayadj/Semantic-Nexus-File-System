@@ -49,7 +49,7 @@ def train_entifier(model, data, device):
 	optimizer = torch.optim.Adam(model.parameters(), lr = 1e-3)
 	criterion = torch.nn.CrossEntropyLoss(ignore_index = 7) # NER_padding_index
 
-	epochs = 50
+	epochs = 10
 
 	for epoch in range(1, epochs + 1):
 
