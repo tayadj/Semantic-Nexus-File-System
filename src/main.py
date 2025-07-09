@@ -84,4 +84,18 @@ texts = [
 core.nexus.pipelines.inference_entifier(engine.entifier, texts, engine.device, config.entifier)
 '''
 
+def metafy(file):
+
+	sentiment = core.nexus.pipelines.inference_sentifier(engine.sentifier, [file], engine.device)
+	entity = core.nexus.pipelines.inference_entifier(engine.entifier, [file], engine.device, config.entifier)
+
+	metafile = {
+		"text": file,
+		"metadata": {
+			"sentiment": sentiment,
+			"entity": entity
+		}
+	}
+
+	return metafile
 

@@ -17,6 +17,8 @@ def inference_sentifier(model, data, device):
 
 		print(f"\"{record}\" -> {prediction} ({probability})")
 
+	return "Positive" if int(prediction) else "Negative"
+
 def inference_entifier(model, data, device, config):
 
 	model.to(device)
@@ -34,4 +36,6 @@ def inference_entifier(model, data, device, config):
 		tags = [config.index_to_NER.get(int(index), "<PAD>") for index in prediction]
 
 		print(f"\"{record}\" -> {tags}")
+
+	return tags
 
