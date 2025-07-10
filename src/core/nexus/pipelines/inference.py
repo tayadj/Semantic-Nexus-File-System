@@ -1,5 +1,15 @@
 import torch
 
+def inference_vectorizer(model, data, device):
+
+	model.to(device)
+	model.eval()
+
+	with torch.no_grad():
+
+	    embeddings, logits = model(data)
+
+	return {record: embedding for record, embedding in zip(data, embeddings)}
 
 
 def inference_sentifier(model, data, device):

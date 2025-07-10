@@ -4,19 +4,20 @@ import torch
 
 class Sentifier(torch.nn.Module):
 
-	def __init__(self, vectorizer):
+	def __init__(self, **config: any):
 
 		super().__init__()
 
-		self.vectorizer = vectorizer
-		self.hidden = torch.nn.Linear(vectorizer.dimension, 128)
-		self.output = torch.nn.Linear(128, 2)
+		self.embedding = config.get("embedding", 64)
+		self.dimension = config.get("dimension", 128)
+		self.number_classes = config.get("number_classes", 2)
 
-	def forward(self, texts):
+		self.hidden = torch.nn.Linear(self.embedding, self.dimension)
+		self.output = torch.nn.Linear(self.dimension, self.number_classes)
 
-		x = self.vectorizer(texts)
-		x = x.mean(dim = 1)
-		x = self.hidden(x)
+	def forward(self, embedding):
+
+		x = self.hidden(embedding)
 		x = torch.relu(x)
 		x = self.output(x)
 		
@@ -24,10 +25,11 @@ class Sentifier(torch.nn.Module):
 
 	class Dataset(torch.utils.data.Dataset):
 
-		def __init__(self, texts, labels):
+		def __init__(self, texts, labels, vectorizer):
 
 			self.texts = texts
 			self.labels = labels
+			self.vectorizer = vectorizer
 
 		def __len__(self):
 
@@ -44,4 +46,9 @@ class Sentifier(torch.nn.Module):
 
 			texts, labels = zip(*batch)
 
-			return list(texts), torch.stack(labels)
+			hidden, _ = self.vectorizer(list(texts))
+			embeddings = hidden[:, 0, :]
+
+			labels = torch.stack(labels)
+
+			return embeddings, labels

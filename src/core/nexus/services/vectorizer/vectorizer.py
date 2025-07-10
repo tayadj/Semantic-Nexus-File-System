@@ -8,84 +8,6 @@ from core.nexus.services.vectorizer import Tokenizer
 
 class Vectorizer(torch.nn.Module):
 
-	def __init__(self, dimension):
-
-		super().__init__()
-
-		self.dimension = dimension
-
-		self.tokenizer = Tokenizer()
-		self.embedding = None
-
-	def __deepcopy__(self, memo):
-
-		instance = self.__class__(self.dimension)
-
-		memo[id(self)] = instance
-
-		instance.dimension = self.dimension
-		instance.tokenizer = self.tokenizer
-
-		instance.embedding = torch.nn.Embedding(
-			num_embeddings = self.embedding.num_embeddings,
-			embedding_dim = self.embedding.embedding_dim,
-			padding_idx = self.embedding.padding_idx
-		)
-
-		state = copy.deepcopy(self.embedding.state_dict(), memo)
-		instance.embedding.load_state_dict(state)
-
-		return instance
-
-	def fit(self, corpus):
-
-		self.tokenizer.fit(corpus)
-		self.embedding = torch.nn.Embedding(
-			num_embeddings = self.tokenizer.size,
-			embedding_dim = self.dimension,
-			padding_idx = self.tokenizer.index_padding
-		)
-
-	def forward(self, texts):
-
-		batches = [ torch.LongTensor(self.tokenizer.encode(text)) for text in texts ]
-		padded = torch.nn.utils.rnn.pad_sequence(batches, batch_first = True, padding_value = self.tokenizer.index_padding)
-		embedding = self.embedding(padded)
-
-		return embedding
-
-
-
-class PositionalEncoder(torch.nn.Module):
-
-	def __init__(self, **config: any):
-
-		super().__init__()
-
-		self.dimension = config.get("dimension", 64)
-		self.sequence_length = config.get("sequence_length", 512)
-		self.dropout_rate = config.get("dropout_rate", 0.1)
-		
-		self.dropout = torch.nn.Dropout(p = self.dropout_rate)
-		
-		encoder = torch.zeros(self.sequence_length, self.dimension)
-		position = torch.arange(0, self.sequence_length, dtype = torch.float).unsqueeze(1)
-		term = torch.exp(torch.arange(0, self.dimension, 2).float() * float(-torch.log(torch.Tensor([10000.0])) / self.dimension))
-		encoder[:, 0::2] = torch.sin(position * term)
-		encoder[:, 1::2] = torch.cos(position * term)
-		encoder = encoder.unsqueeze(0).transpose(0, 1)
-
-		self.register_buffer("encoder", encoder)
-
-	def forward(self, x):
-
-		x = x + self.encoder[:x.size(0), :]
-		x = self.dropout(x)
-
-		return x
-
-class TransformerVectorizer(torch.nn.Module):
-
 	def __init__(self, corpus: list[str], **config: any):
 
 		super().__init__()
@@ -110,7 +32,7 @@ class TransformerVectorizer(torch.nn.Module):
 			nhead = self.number_heads,
 			dim_feedforward = self.feedforward,
 			dropout = self.dropout_rate,
-			batch_first = True # True? False doesn't involves nested tensors
+			batch_first = True
 		)
 		self.encoder = torch.nn.TransformerEncoder(
 			self.encoder_layer,
@@ -198,3 +120,35 @@ class TransformerVectorizer(torch.nn.Module):
 				masked.append(masked_text)
 
 			return masked, labels
+
+class PositionalEncoder(torch.nn.Module):
+
+	def __init__(self, **config: any):
+
+		super().__init__()
+
+		self.dimension = config.get("dimension", 64)
+		self.sequence_length = config.get("sequence_length", 512)
+		self.dropout_rate = config.get("dropout_rate", 0.1)
+		
+		self.dropout = torch.nn.Dropout(p = self.dropout_rate)
+		
+		encoder = torch.zeros(self.sequence_length, self.dimension)
+		position = torch.arange(0, self.sequence_length, dtype = torch.float).unsqueeze(1)
+		term = torch.exp(torch.arange(0, self.dimension, 2).float() * float(-torch.log(torch.Tensor([10000.0])) / self.dimension))
+		encoder[:, 0::2] = torch.sin(position * term)
+		encoder[:, 1::2] = torch.cos(position * term)
+		encoder = encoder.unsqueeze(0).transpose(0, 1)
+
+		self.register_buffer("encoder", encoder)
+
+	def forward(self, x):
+
+		x = x + self.encoder[:x.size(0), :]
+		x = self.dropout(x)
+
+		return x
+
+
+
+TransformerVectorizer = Vectorizer # alias, to remove

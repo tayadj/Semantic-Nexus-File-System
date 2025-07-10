@@ -1,2 +1,2 @@
 from .tokenizer import Tokenizer
-from .vectorizer import Vectorizer, TransformerVectorizer
+from .vectorizer import Vectorizer

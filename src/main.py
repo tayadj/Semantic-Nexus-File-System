@@ -77,7 +77,7 @@ def metafy(file):
 
 	return metafile
 '''
-
+'''
 settings = config.Settings()
 engine = core.Engine()
 
@@ -88,3 +88,13 @@ vectorizer = core.nexus.services.vectorizer.TransformerVectorizer(corpus)
 engine.vectorizer = vectorizer
 
 model = core.nexus.pipelines.train_vectorizer(engine.vectorizer, corpus, engine.device)
+torch.save(model, os.path.dirname(__file__) + "/storage/models/vectorizer.pth")
+'''
+
+settings = config.Settings()
+engine = core.nexus.Engine()
+
+engine.vectorizer = torch.load(settings.vectorizer.path, weights_only = False)
+
+engine.sentifier = core.nexus.services.sentifier.Sentifier()
+

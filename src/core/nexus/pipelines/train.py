@@ -13,7 +13,7 @@ def train_vectorizer(model, corpus, device):
 	optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-5)
 	criterion = torch.nn.CrossEntropyLoss(ignore_index = -1)
 
-	epochs = 1
+	epochs = 10
 
 	for epoch in range(1, epochs + 1):
 
@@ -36,8 +36,6 @@ def train_vectorizer(model, corpus, device):
 
 			total_loss += loss.item()
 
-			print(total_loss)
-
 		average_loss = total_loss / len(loader)
 
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
@@ -46,22 +44,12 @@ def train_vectorizer(model, corpus, device):
 
 
 
-
-
-
-
-
-
-
-
-
-
-def train_sentifier(model, data, device):
+def train_sentifier(model, data, device, vectorizer):
 
 	model.to(device)
 	model.train()
 
-	dataset = model.Dataset(data["input"].tolist(), data["output"].tolist())
+	dataset = model.Dataset(data["input"].tolist(), data["output"].tolist(), vectorizer)
 	loader = torch.utils.data.DataLoader(dataset, batch_size = 2, shuffle = True, collate_fn = dataset.collate)
 
 	optimizer = torch.optim.Adam(model.parameters(), lr = 1e-3)
@@ -73,9 +61,9 @@ def train_sentifier(model, data, device):
 
 		total_loss = 0.0
 
-		for texts, labels in loader:
+		for embeddings, labels in loader:
 
-			logits = model(texts)
+			logits = model(embeddings)
 			loss = criterion(logits, labels.to(device))
 
 			optimizer.zero_grad()
@@ -89,6 +77,13 @@ def train_sentifier(model, data, device):
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 
 	return model
+
+
+
+
+
+
+
 
 
 
