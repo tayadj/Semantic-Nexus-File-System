@@ -148,7 +148,3 @@ class PositionalEncoder(torch.nn.Module):
 		x = self.dropout(x)
 
 		return x
-
-
-
-TransformerVectorizer = Vectorizer # alias, to remove
