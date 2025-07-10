@@ -37,5 +37,5 @@ def inference_entifier(model, data, device, config):
 
 		print(f"\"{record}\" -> {tags}")
 
-	return tags
+	return tags # last one
 

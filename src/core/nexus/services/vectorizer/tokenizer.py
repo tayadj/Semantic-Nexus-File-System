@@ -8,8 +8,10 @@ class Tokenizer:
 
 		self.token_padding = "<PADDING>"
 		self.token_unknown = "<UNKNOWN>"
+		self.token_class = "<CLASS>"
 		self.index_padding = None
 		self.index_unknown = None
+		self.index_class = None
 		self.size = None
 
 		self.token_to_index = {}
@@ -68,17 +70,20 @@ class Tokenizer:
 
 		vocabulary = { token for text in corpus for token in self.tokenize(text) }
 
-		self.token_to_index = { word : index for index, word in enumerate(vocabulary, start = 2) }
+		self.token_to_index = { word : index for index, word in enumerate(vocabulary, start = 3) }
 		self.token_to_index[self.token_padding] = 0
 		self.token_to_index[self.token_unknown] = 1
+		self.token_to_index[self.token_class] = 2
 
-		self.index_to_token = { index : word for index, word in enumerate(vocabulary, start = 2) }
+		self.index_to_token = { index : word for index, word in enumerate(vocabulary, start = 3) }
 		self.index_to_token[0] = self.token_padding
 		self.index_to_token[1] = self.token_unknown
+		self.index_to_token[2] = self.token_class
 
 		self.size = len(self.token_to_index)
 		self.index_padding = 0
 		self.index_unknown = 1
+		self.index_class = 2
 
 	def encode(self, text):
 

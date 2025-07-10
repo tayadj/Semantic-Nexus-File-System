@@ -77,3 +77,8 @@ def metafy(file):
 
 	return metafile
 
+
+corpus_path = os.path.dirname(__file__) + "/storage/corpus.json"
+corpus = core.nexus.pipelines.data_corpus(corpus_path)
+
+v = core.nexus.services.vectorizer.TransformerVectorizer(corpus)
