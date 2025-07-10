@@ -55,7 +55,7 @@ texts = [
 core.nexus.pipelines.inference_entifier(engine.entifier, texts, engine.device, config.entifier)
 '''
 
-
+'''
 settings = config.Settings()
 engine = core.Engine()
 engine.vectorizer = torch.load(settings.vectorizer.path, weights_only = False)
@@ -76,9 +76,15 @@ def metafy(file):
 	}
 
 	return metafile
+'''
 
+settings = config.Settings()
+engine = core.Engine()
 
 corpus_path = os.path.dirname(__file__) + "/storage/corpus.json"
 corpus = core.nexus.pipelines.data_corpus(corpus_path)
 
-v = core.nexus.services.vectorizer.TransformerVectorizer(corpus)
+vectorizer = core.nexus.services.vectorizer.TransformerVectorizer(corpus)
+engine.vectorizer = vectorizer
+
+model = core.nexus.pipelines.train_vectorizer(engine.vectorizer, corpus, engine.device)

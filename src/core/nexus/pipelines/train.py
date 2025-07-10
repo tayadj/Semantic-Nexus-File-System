@@ -2,6 +2,60 @@ import torch
 
 
 
+def train_vectorizer(model, corpus, device):
+
+	model.to(device)
+	model.train()
+
+	dataset = model.Dataset(corpus, model.tokenizer, model.sequence_length, model.masking_rate)
+	loader = torch.utils.data.DataLoader(dataset, batch_size = 32, shuffle = True, collate_fn = dataset.collate)
+
+	optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-5)
+	criterion = torch.nn.CrossEntropyLoss(ignore_index = -1)
+
+	epochs = 1
+
+	for epoch in range(1, epochs + 1):
+
+		total_loss = 0.0
+
+		for masked_texts, labels in loader:
+
+			labels.to(device)
+
+			optimizer.zero_grad()
+
+			hidden, output = model(masked_texts)
+			loss = criterion(
+				output.view(output.shape[0] * output.shape[1],  output.shape[2]),
+				labels.view(output.shape[0] * output.shape[1])
+			)
+			loss.backward()
+
+			optimizer.step()
+
+			total_loss += loss.item()
+
+			print(total_loss)
+
+		average_loss = total_loss / len(loader)
+
+		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
+
+	return model
+
+
+
+
+
+
+
+
+
+
+
+
+
 def train_sentifier(model, data, device):
 
 	model.to(device)

@@ -1,4 +1,5 @@
 import copy
+import random
 import torch
 
 from core.nexus.services.vectorizer import Tokenizer
@@ -61,8 +62,8 @@ class PositionalEncoder(torch.nn.Module):
 
 		super().__init__()
 
-		self.dimension = config.get("dimension", 256)
-		self.sequence_length = config.get("sequence_length", 1024)
+		self.dimension = config.get("dimension", 64)
+		self.sequence_length = config.get("sequence_length", 512)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		
 		self.dropout = torch.nn.Dropout(p = self.dropout_rate)
@@ -92,12 +93,13 @@ class TransformerVectorizer(torch.nn.Module):
 		self.tokenizer = Tokenizer()
 		self.tokenizer.fit(corpus)
 		
-		self.dimension = config.get("dimension", 256)
-		self.sequence_length = config.get("sequence_length", 1024)
+		self.dimension = config.get("dimension", 64)
+		self.sequence_length = config.get("sequence_length", 512)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
-		self.number_heads = config.get("number_heads", 8)
-		self.number_layers = config.get("number_layers", 4)
-		self.feedforward = config.get("feedforward", 512)
+		self.masking_rate = config.get("masking_rate", 0.15)
+		self.number_heads = config.get("number_heads", 4)
+		self.number_layers = config.get("number_layers", 2)
+		self.feedforward = config.get("feedforward", 128)
 		self.tie_weights = config.get("tie_weights", True)
 
 		self.embedding = torch.nn.Embedding(self.tokenizer.size, self.dimension, padding_idx = self.tokenizer.index_padding)
@@ -144,3 +146,55 @@ class TransformerVectorizer(torch.nn.Module):
 
 		return hidden, output
 
+	class Dataset(torch.utils.data.Dataset):
+
+		def __init__(self, corpus: list[str], tokenizer, sequence_length, masking_rate):
+
+			self.corpus = corpus
+			self.tokenizer = tokenizer
+			self.sequence_length = sequence_length
+			self.masking_rate = masking_rate
+
+		def __len__(self):
+
+			return len(self.corpus)
+
+		def __getitem__(self, index):
+
+			return self.corpus[index]
+
+		def collate(self, batch: list[str]):
+
+			batch_dimension = len(batch)
+			layer_dimension = self.sequence_length
+
+			labels = torch.full((batch_dimension, layer_dimension), -1, dtype = torch.long)
+			masked = []
+
+			for i, text in enumerate(batch):
+
+				indices = self.tokenizer.encode(text)
+				length = len(indices)
+				indices_ = [self.tokenizer.index_class] + indices
+				indices_ = indices_[:layer_dimension]
+				indices_ = indices_ + [self.tokenizer.index_padding] * (layer_dimension - len(indices_))
+				labels[i] = torch.tensor(indices_, dtype = torch.long)
+
+				mask = [False] * length
+
+				for j in range(length):
+
+					if random.random() < self.masking_rate:
+
+						mask[j] = True
+
+				masked_indices = []
+
+				for j, index in enumerate(indices):
+
+					masked_indices.append(self.tokenizer.index_mask if mask[j] else index)
+
+				masked_text = self.tokenizer.decode(masked_indices)
+				masked.append(masked_text)
+
+			return masked, labels
