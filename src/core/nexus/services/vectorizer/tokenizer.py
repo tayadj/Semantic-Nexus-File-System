@@ -9,9 +9,11 @@ class Tokenizer:
 		self.token_padding = "<PADDING>"
 		self.token_unknown = "<UNKNOWN>"
 		self.token_class = "<CLASS>"
+		self.token_mask = "<MASK>"
 		self.index_padding = None
 		self.index_unknown = None
 		self.index_class = None
+		self.index_mask = None
 		self.size = None
 
 		self.token_to_index = {}
@@ -70,20 +72,23 @@ class Tokenizer:
 
 		vocabulary = { token for text in corpus for token in self.tokenize(text) }
 
-		self.token_to_index = { word : index for index, word in enumerate(vocabulary, start = 3) }
+		self.token_to_index = { word : index for index, word in enumerate(vocabulary, start = 4) }
 		self.token_to_index[self.token_padding] = 0
 		self.token_to_index[self.token_unknown] = 1
 		self.token_to_index[self.token_class] = 2
+		self.token_to_index[self.token_mask] = 3
 
-		self.index_to_token = { index : word for index, word in enumerate(vocabulary, start = 3) }
+		self.index_to_token = { index : word for index, word in enumerate(vocabulary, start = 4) }
 		self.index_to_token[0] = self.token_padding
 		self.index_to_token[1] = self.token_unknown
 		self.index_to_token[2] = self.token_class
+		self.index_to_token[3] = self.token_mask
 
 		self.size = len(self.token_to_index)
 		self.index_padding = 0
 		self.index_unknown = 1
 		self.index_class = 2
+		self.index_mask = 3
 
 	def encode(self, text):
 
@@ -91,3 +96,10 @@ class Tokenizer:
 		indices = [ self.token_to_index.get(token, self.index_unknown) for token in tokens ]
 
 		return indices
+
+	def decode(self, indices):
+
+		tokens = [ self.index_to_token[index] for index in indices ]
+		text = " ".join(tokens)
+
+		return text
