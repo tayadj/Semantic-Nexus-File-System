@@ -85,7 +85,7 @@ engine = core.Engine()
 corpus_path = os.path.dirname(__file__) + "/storage/corpus.json"
 corpus = core.nexus.pipelines.data_corpus(corpus_path)
 
-# vectorizer = core.nexus.services.vectorizer.Vectorizer(corpus)
+vectorizer = core.nexus.services.vectorizer.Vectorizer(corpus)
 vectorizer = torch.load(os.path.dirname(__file__) + "/storage/models/vectorizer.pth", weights_only = False)
 engine.vectorizer = vectorizer
 

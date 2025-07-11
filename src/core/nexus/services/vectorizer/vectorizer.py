@@ -14,7 +14,7 @@ class Vectorizer(torch.nn.Module):
 		self.tokenizer = Tokenizer()
 		self.tokenizer.fit(corpus)
 		
-		self.dimension = config.get("dimension", 64)
+		self.dimension = config.get("dimension", 32)
 		self.sequence_length = config.get("sequence_length", 128)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		self.masking_rate = config.get("masking_rate", 0.15)
@@ -38,8 +38,9 @@ class Vectorizer(torch.nn.Module):
 			self.number_layers
 		)
 
-		self.decoder = torch.nn.Linear(self.dimension, self.tokenizer.size, bias = False)
+		self.decoder = torch.nn.Linear(self.dimension, self.tokenizer.size, bias = True)
 		self.decoder.weight = self.embedding.weight if self.tie_weights else self.decoder.weight
+		torch.nn.init.zeros_(self.decoder.bias)
 
 	def forward(self, tensor: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
@@ -131,7 +132,7 @@ class PositionalEncoder(torch.nn.Module):
 
 		super().__init__()
 
-		self.dimension = config.get("dimension", 64)
+		self.dimension = config.get("dimension", 32)
 		self.sequence_length = config.get("sequence_length", 128)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		

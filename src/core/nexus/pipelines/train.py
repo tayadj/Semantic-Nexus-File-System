@@ -2,7 +2,7 @@ import torch
 
 
 
-def train_vectorizer(model, corpus, device, epochs = 5, iterations = 1000):
+def train_vectorizer(model, corpus, device, epochs = 3):
 
 	model.to(device)
 	model.train()
@@ -17,15 +17,7 @@ def train_vectorizer(model, corpus, device, epochs = 5, iterations = 1000):
 
 		total_loss = 0.0
 
-		counter = 0
-
 		for indices, labels in loader:
-
-			counter += 1
-
-			if counter == min(iterations, len(loader)):
-
-				break
 
 			labels = labels.to(device)
 			indices = indices.to(device)
@@ -42,12 +34,13 @@ def train_vectorizer(model, corpus, device, epochs = 5, iterations = 1000):
 
 			total_loss += loss.item()
 
-		average_loss = total_loss / counter
+		average_loss = total_loss / len(loader)
 
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 		torch.save(model, f"vectorizer_epoch_{epoch:02d}.pth")
 
 	return model
+
 
 
 
