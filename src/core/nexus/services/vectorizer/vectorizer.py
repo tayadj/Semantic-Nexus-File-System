@@ -16,7 +16,7 @@ class Vectorizer(torch.nn.Module):
 		self.tokenizer.fit(corpus)
 		
 		self.dimension = config.get("dimension", 64)
-		self.sequence_length = config.get("sequence_length", 512)
+		self.sequence_length = config.get("sequence_length", 128)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		self.masking_rate = config.get("masking_rate", 0.15)
 		self.number_heads = config.get("number_heads", 4)
@@ -52,17 +52,18 @@ class Vectorizer(torch.nn.Module):
 
 			indices = self.tokenizer.encode(text)
 			indices = [self.tokenizer.index_class] + indices
-			indices = indices[:self.positional.encoder.size(0)]
-			indices = indices + [self.tokenizer.index_padding] * (self.positional.encoder.size(0) - len(indices))
+			indices = indices[:self.positional.encoder.size(1)]
+			indices = indices + [self.tokenizer.index_padding] * (self.positional.encoder.size(1) - len(indices))
 			
 			batches.append(indices)
 
-		tensor = torch.tensor(batches, dtype = torch.long)
+		tensor = torch.tensor(batches, dtype = torch.long, device = self.embedding.weight.device)
+		padding_mask = tensor.eq(self.tokenizer.index_padding)
 
 		tensor = self.embedding(tensor) * self.scale
 		tensor = self.positional(tensor)
 
-		hidden = self.encoder(tensor)
+		hidden = self.encoder(tensor, src_key_padding_mask = padding_mask)
 
 		output = self.decoder(hidden)
 
@@ -91,35 +92,26 @@ class Vectorizer(torch.nn.Module):
 			layer_dimension = self.sequence_length
 
 			labels = torch.full((batch_dimension, layer_dimension), -1, dtype = torch.long)
-			masked = []
+			masked_indices = torch.full((batch_dimension, layer_dimension), self.tokenizer.index_padding, dtype = torch.long)
+			masked_texts = []
 
 			for i, text in enumerate(batch):
 
 				indices = self.tokenizer.encode(text)
-				length = len(indices)
-				indices_ = [self.tokenizer.index_class] + indices
-				indices_ = indices_[:layer_dimension]
-				indices_ = indices_ + [self.tokenizer.index_padding] * (layer_dimension - len(indices_))
-				labels[i] = torch.tensor(indices_, dtype = torch.long)
+				length = min(len(indices), layer_dimension - 1)
 
-				mask = [False] * length
+				masked_indices[i, 1 : length + 1] = torch.tensor(indices[:length], dtype = torch.long) # [0] = <CLASS>
 
 				for j in range(length):
 
 					if random.random() < self.masking_rate:
 
-						mask[j] = True
+						labels[i, j + 1] = indices[j]
+						masked_indices[i, j + 1] = self.tokenizer.index_mask
 
-				masked_indices = []
+				masked_texts.append(self.tokenizer.decode([int(index) for index in list(masked_indices[i])]))
 
-				for j, index in enumerate(indices):
-
-					masked_indices.append(self.tokenizer.index_mask if mask[j] else index)
-
-				masked_text = self.tokenizer.decode(masked_indices)
-				masked.append(masked_text)
-
-			return masked, labels
+			return masked_texts, labels
 
 class PositionalEncoder(torch.nn.Module):
 
@@ -128,23 +120,23 @@ class PositionalEncoder(torch.nn.Module):
 		super().__init__()
 
 		self.dimension = config.get("dimension", 64)
-		self.sequence_length = config.get("sequence_length", 512)
+		self.sequence_length = config.get("sequence_length", 128)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		
 		self.dropout = torch.nn.Dropout(p = self.dropout_rate)
 		
 		encoder = torch.zeros(self.sequence_length, self.dimension)
-		position = torch.arange(0, self.sequence_length, dtype = torch.float).unsqueeze(1)
-		term = torch.exp(torch.arange(0, self.dimension, 2).float() * float(-torch.log(torch.Tensor([10000.0])) / self.dimension))
+		position = torch.arange(self.sequence_length).unsqueeze(1).float()
+		term = torch.exp(torch.arange(0, self.dimension, 2).float() * (-torch.log(torch.tensor(10000.0)) / self.dimension))
 		encoder[:, 0::2] = torch.sin(position * term)
 		encoder[:, 1::2] = torch.cos(position * term)
-		encoder = encoder.unsqueeze(0).transpose(0, 1)
+		encoder = encoder.unsqueeze(0)
 
 		self.register_buffer("encoder", encoder)
 
 	def forward(self, x):
 
-		x = x + self.encoder[:x.size(0), :]
+		x = x + self.encoder[:, :x.size(1), :]
 		x = self.dropout(x)
 
 		return x

@@ -12,14 +12,19 @@ def inference_vectorizer(model, data, device):
 	return {record: embedding for record, embedding in zip(data, embeddings)}
 
 
-def inference_sentifier(model, data, device):
+def inference_sentifier(model, data, device, vectorizer):
 
 	model.to(device)
 	model.eval()
 
+	vectorizer.to(device)
+	vectorizer.eval()
+
 	with torch.no_grad():
 
-		logits = model(data)
+		hidden, _ = vectorizer(data)
+		embeddings = hidden[:, 0, :]
+		logits = model(embeddings)
 		probabilities = torch.nn.functional.softmax(logits, dim = 1)
 		predictions = torch.argmax(probabilities, dim = 1)
 

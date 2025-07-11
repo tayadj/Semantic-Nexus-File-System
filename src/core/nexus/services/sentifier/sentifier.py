@@ -13,11 +13,14 @@ class Sentifier(torch.nn.Module):
 		self.number_classes = config.get("number_classes", 2)
 
 		self.hidden = torch.nn.Linear(self.embedding, self.dimension)
+		self.inter = torch.nn.Linear(self.dimension, self.dimension)
 		self.output = torch.nn.Linear(self.dimension, self.number_classes)
 
 	def forward(self, embedding):
 
 		x = self.hidden(embedding)
+		x = torch.relu(x)
+		x = self.inter(x)
 		x = torch.relu(x)
 		x = self.output(x)
 		
@@ -46,8 +49,11 @@ class Sentifier(torch.nn.Module):
 
 			texts, labels = zip(*batch)
 
-			hidden, _ = self.vectorizer(list(texts))
-			embeddings = hidden[:, 0, :]
+			with torch.no_grad():
+			
+				hidden, _ = self.vectorizer(list(texts))
+			
+			embeddings = hidden[:, 0, :].detach()
 
 			labels = torch.stack(labels)
 

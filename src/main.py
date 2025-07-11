@@ -77,24 +77,47 @@ def metafy(file):
 
 	return metafile
 '''
-'''
+
+
 settings = config.Settings()
 engine = core.Engine()
 
 corpus_path = os.path.dirname(__file__) + "/storage/corpus.json"
 corpus = core.nexus.pipelines.data_corpus(corpus_path)
 
-vectorizer = core.nexus.services.vectorizer.TransformerVectorizer(corpus)
+# vectorizer = core.nexus.services.vectorizer.Vectorizer(corpus)
+vectorizer = torch.load(os.path.dirname(__file__) + "/storage/models/vectorizer.pth", weights_only = False)
 engine.vectorizer = vectorizer
 
 model = core.nexus.pipelines.train_vectorizer(engine.vectorizer, corpus, engine.device)
 torch.save(model, os.path.dirname(__file__) + "/storage/models/vectorizer.pth")
-'''
 
+
+'''
 settings = config.Settings()
 engine = core.nexus.Engine()
 
 engine.vectorizer = torch.load(settings.vectorizer.path, weights_only = False)
+engine.vectorizer.eval()
 
 engine.sentifier = core.nexus.services.sentifier.Sentifier()
 
+sentiment_path = os.path.dirname(__file__) + "/storage/sentiment.json" 
+sentiment = core.nexus.pipelines.data_sentifier(sentiment_path)
+
+core.nexus.pipelines.train_sentifier(engine.sentifier, sentiment, engine.device, engine.vectorizer)
+
+texts = [
+	"I love coffee on rainy mornings.",
+	"This traffic jam is so frustrating.",
+	"Absolutely delighted with the surprise party!",
+	"I'm feeling under the weather today.",
+	"What an amazing performance that was.",
+	"I can't stand this noise anymore.",
+	"The weather is perfect for a walk.",
+	"I feel completely let down by this outcome.",
+	"Everything turned out better than expected!",
+	"I'm so bored right now."
+]
+core.nexus.pipelines.inference_sentifier(engine.sentifier, texts, engine.device, engine.vectorizer)
+'''

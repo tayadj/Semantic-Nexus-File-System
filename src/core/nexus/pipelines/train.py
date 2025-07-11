@@ -2,7 +2,7 @@ import torch
 
 
 
-def train_vectorizer(model, corpus, device):
+def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 
 	model.to(device)
 	model.train()
@@ -13,30 +13,37 @@ def train_vectorizer(model, corpus, device):
 	optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-5)
 	criterion = torch.nn.CrossEntropyLoss(ignore_index = -1)
 
-	epochs = 10
-
 	for epoch in range(1, epochs + 1):
 
 		total_loss = 0.0
 
+		counter = 0
+
 		for masked_texts, labels in loader:
 
-			labels.to(device)
+			counter += 1
+
+			print(f"Epoch #{epoch}, iteration #{counter} -> {(labels.view(-1) != -1).sum().item()} masked tokens")
+
+			if counter == min(iterations, len(loader)):
+
+				break
+
+			labels = labels.to(device)
 
 			optimizer.zero_grad()
 
 			hidden, output = model(masked_texts)
-			loss = criterion(
-				output.view(output.shape[0] * output.shape[1],  output.shape[2]),
-				labels.view(output.shape[0] * output.shape[1])
-			)
+			logits = output.view(-1,  output.size(-1))
+			targets = labels.view(-1)
+			loss = criterion(logits, targets)
 			loss.backward()
 
 			optimizer.step()
 
 			total_loss += loss.item()
 
-		average_loss = total_loss / len(loader)
+		average_loss = total_loss / counter
 
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 
@@ -49,13 +56,16 @@ def train_sentifier(model, data, device, vectorizer):
 	model.to(device)
 	model.train()
 
+	vectorizer.to(device)
+	vectorizer.eval()
+
 	dataset = model.Dataset(data["input"].tolist(), data["output"].tolist(), vectorizer)
 	loader = torch.utils.data.DataLoader(dataset, batch_size = 2, shuffle = True, collate_fn = dataset.collate)
 
 	optimizer = torch.optim.Adam(model.parameters(), lr = 1e-3)
 	criterion = torch.nn.CrossEntropyLoss()
 
-	epochs = 1
+	epochs = 10
 
 	for epoch in range(1, epochs + 1):
 
@@ -63,8 +73,11 @@ def train_sentifier(model, data, device, vectorizer):
 
 		for embeddings, labels in loader:
 
+			embeddings = embeddings.to(device)
+			labels = labels.to(device)
+
 			logits = model(embeddings)
-			loss = criterion(logits, labels.to(device))
+			loss = criterion(logits, labels)
 
 			optimizer.zero_grad()
 			loss.backward()
