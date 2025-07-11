@@ -7,7 +7,7 @@ def inference_vectorizer(model, data, device):
 
 	with torch.no_grad():
 
-	    embeddings, logits = model(data)
+	    embeddings, _, logits = model(data)
 
 	return {record: embedding for record, embedding in zip(data, embeddings)}
 

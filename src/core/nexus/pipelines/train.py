@@ -2,13 +2,13 @@ import torch
 
 
 
-def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
+def train_vectorizer(model, corpus, device, epochs = 5, iterations = 1000):
 
 	model.to(device)
 	model.train()
 
 	dataset = model.Dataset(corpus, model.tokenizer, model.sequence_length, model.masking_rate)
-	loader = torch.utils.data.DataLoader(dataset, batch_size = 32, shuffle = True, collate_fn = dataset.collate)
+	loader = torch.utils.data.DataLoader(dataset, batch_size = 8, shuffle = True, collate_fn = dataset.collate)
 
 	optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-5)
 	criterion = torch.nn.CrossEntropyLoss(ignore_index = -1)
@@ -19,21 +19,20 @@ def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 
 		counter = 0
 
-		for masked_texts, labels in loader:
+		for indices, labels in loader:
 
 			counter += 1
-
-			print(f"Epoch #{epoch}, iteration #{counter} -> {(labels.view(-1) != -1).sum().item()} masked tokens")
 
 			if counter == min(iterations, len(loader)):
 
 				break
 
 			labels = labels.to(device)
+			indices = indices.to(device)
 
 			optimizer.zero_grad()
 
-			hidden, output = model(masked_texts)
+			semantic_embeddings, static_embeddings, output = model(indices)
 			logits = output.view(-1,  output.size(-1))
 			targets = labels.view(-1)
 			loss = criterion(logits, targets)
@@ -46,6 +45,7 @@ def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 		average_loss = total_loss / counter
 
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
+		torch.save(model, f"vectorizer_epoch_{epoch:02d}.pth")
 
 	return model
 
