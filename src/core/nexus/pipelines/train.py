@@ -1,7 +1,8 @@
 import torch
 
 
-
+# To Remove
+'''
 def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 
 	model.to(device)
@@ -48,7 +49,7 @@ def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 		torch.save(model, f"vectorizer_epoch_{epoch:02d}.pth")
 
 	return model
-
+'''
 
 
 def train_sentifier(model, data, device, vectorizer):

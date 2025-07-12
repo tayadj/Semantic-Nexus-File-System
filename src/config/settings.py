@@ -24,6 +24,8 @@ class Settings(pydantic_settings.BaseSettings):
 	sentifier: SentifierConfig
 	entifier: EntifierConfig
 
+	device: str = pydantic.Field(..., description = "Application device")
+
 	model_config = pydantic_settings.SettingsConfigDict(
         env_file = os.path.dirname(__file__) + '/.env',
         env_file_encoding = "utf-8",

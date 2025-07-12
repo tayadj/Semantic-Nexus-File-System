@@ -1,7 +1,7 @@
 import random
 import torch
 
-from core.nexus.services.vectorizer import Tokenizer
+from core.nexus.services.vectorizer.tokenizer import Tokenizer
 
 
 
