@@ -147,7 +147,7 @@ class PositionalEncoder(torch.nn.Module):
 
 		self.register_buffer("encoder", encoder)
 
-	def forward(self, x):
+	def forward(self, x: torch.Tensor) -> torch.Tensor:
 
 		x = x + self.encoder[:, :x.size(1), :]
 		x = self.dropout(x)

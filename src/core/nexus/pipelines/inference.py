@@ -1,15 +1,5 @@
 import torch
 
-def inference_vectorizer(model, data, device):
-
-	model.to(device)
-	model.eval()
-
-	with torch.no_grad():
-
-	    embeddings, _, logits = model(data)
-
-	return {record: embedding for record, embedding in zip(data, embeddings)}
 
 
 def inference_sentifier(model, data, device, vectorizer):
@@ -22,9 +12,8 @@ def inference_sentifier(model, data, device, vectorizer):
 
 	with torch.no_grad():
 
-		hidden, _ = vectorizer(data)
-		embeddings = hidden[:, 0, :]
-		logits = model(embeddings)
+		_, static_embeddings, _ = vectorizer(vectorizer.preprocess(data))
+		logits = model(static_embeddings)
 		probabilities = torch.nn.functional.softmax(logits, dim = 1)
 		predictions = torch.argmax(probabilities, dim = 1)
 
@@ -32,8 +21,10 @@ def inference_sentifier(model, data, device, vectorizer):
 
 		print(f"\"{record}\" -> {prediction} ({probability})")
 
-	return "Positive" if int(prediction) else "Negative"
 
+
+
+'''
 def inference_entifier(model, data, device, config):
 
 	model.to(device)
@@ -53,4 +44,4 @@ def inference_entifier(model, data, device, config):
 		print(f"\"{record}\" -> {tags}")
 
 	return tags # last one
-
+'''

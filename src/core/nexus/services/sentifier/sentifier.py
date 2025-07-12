@@ -1,30 +1,39 @@
 import torch
 
 
-
 class Sentifier(torch.nn.Module):
 
 	def __init__(self, **config: any):
 
 		super().__init__()
 
-		self.embedding = config.get("embedding", 64)
+		self.embedding = config.get("embedding", 32)
 		self.dimension = config.get("dimension", 128)
 		self.number_classes = config.get("number_classes", 2)
+		self.number_layers = config.get("number_layers", 2)
+		self.dropout = config.get("dropout", 0.1)
 
-		self.hidden = torch.nn.Linear(self.embedding, self.dimension)
-		self.inter = torch.nn.Linear(self.dimension, self.dimension)
-		self.output = torch.nn.Linear(self.dimension, self.number_classes)
+		self.hidden = torch.nn.LSTM(
+			input_size = self.embedding,
+			hidden_size = self.dimension,
+			num_layers = self.number_layers,
+			dropout = self.dropout if self.number_layers > 1 else 0.0,
+			bidirectional = True,
+			batch_first = True
+		)
+		self.classifier = torch.nn.Linear(self.dimension * 2, self.number_classes)
 
-	def forward(self, embedding):
+	def forward(self, embeddings: torch.Tensor) -> torch.Tensor:
 
-		x = self.hidden(embedding)
-		x = torch.relu(x)
-		x = self.inter(x)
-		x = torch.relu(x)
-		x = self.output(x)
-		
-		return x
+		_, (hidden, _) = self.hidden(embeddings)
+
+		hidden_forward = hidden[-2]
+		hidden_backward = hidden[-1]
+		hidden = torch.cat([hidden_forward, hidden_backward], dim = 1)
+
+		logits = self.classifier(hidden)
+
+		return logits
 
 	class Dataset(torch.utils.data.Dataset):
 
@@ -51,10 +60,9 @@ class Sentifier(torch.nn.Module):
 
 			with torch.no_grad():
 			
-				hidden, _ = self.vectorizer(list(texts))
+				_, static_embedding, _ = self.vectorizer(self.vectorizer.preprocess(texts))
 			
-			embeddings = hidden[:, 0, :].detach()
-
+			embeddings = static_embedding
 			labels = torch.stack(labels)
 
 			return embeddings, labels

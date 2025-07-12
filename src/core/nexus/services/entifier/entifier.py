@@ -1,8 +1,13 @@
 import torch
 
 
-
 class Entifier(torch.nn.Module):
+
+	pass
+
+
+'''
+class OutdatedEntifier(torch.nn.Module):
 
 	def __init__(self, vectorizer):
 
@@ -52,3 +57,4 @@ class Entifier(torch.nn.Module):
 			labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first = True, padding_value = 17) # NER_padding_value
 
 			return list(texts), labels
+'''

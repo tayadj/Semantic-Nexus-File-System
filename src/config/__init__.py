@@ -1,2 +1,3 @@
 from .settings import Settings
+from .application import Application
 from .entifier import NER_to_index, index_to_NER, NER_padding_index, NER_size, map_NER

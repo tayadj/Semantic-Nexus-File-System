@@ -2,7 +2,7 @@ import torch
 
 
 
-def train_vectorizer(model, corpus, device, epochs = 3):
+def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 
 	model.to(device)
 	model.train()
@@ -10,14 +10,22 @@ def train_vectorizer(model, corpus, device, epochs = 3):
 	dataset = model.Dataset(corpus, model.tokenizer, model.sequence_length, model.masking_rate)
 	loader = torch.utils.data.DataLoader(dataset, batch_size = 8, shuffle = True, collate_fn = dataset.collate)
 
-	optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-5)
+	optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-3)
 	criterion = torch.nn.CrossEntropyLoss(ignore_index = -1)
 
 	for epoch in range(1, epochs + 1):
 
 		total_loss = 0.0
 
+		counter = 0
+
 		for indices, labels in loader:
+
+			counter += 1
+
+			if counter > iterations:
+
+				break
 
 			labels = labels.to(device)
 			indices = indices.to(device)
@@ -34,13 +42,12 @@ def train_vectorizer(model, corpus, device, epochs = 3):
 
 			total_loss += loss.item()
 
-		average_loss = total_loss / len(loader)
+		average_loss = total_loss / (counter - 1)
 
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 		torch.save(model, f"vectorizer_epoch_{epoch:02d}.pth")
 
 	return model
-
 
 
 
@@ -92,7 +99,7 @@ def train_sentifier(model, data, device, vectorizer):
 
 
 
-
+'''
 def train_entifier(model, data, device):
 
 	model.to(device)
@@ -140,3 +147,4 @@ def train_entifier(model, data, device):
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 
 	return model
+'''
