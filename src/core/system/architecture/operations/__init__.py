@@ -1,1 +1,1 @@
-from .atomic import Operation, CreateOperation
+from .atomic import Create, Read

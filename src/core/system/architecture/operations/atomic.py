@@ -14,7 +14,7 @@ class Operation:
 
 
 
-class CreateOperation(Operation):
+class Create(Operation):
 
 	def __init__(self, uri: pathlib.Path, data: bytes):
 
@@ -31,3 +31,17 @@ class CreateOperation(Operation):
 		if self.uri.exists():
 
 			self.uri.unlink()
+
+class Read(Operation):
+
+	def __init__(self, uri: pathlib.Path):
+
+		self.uri = uri
+
+	def execute(self):
+
+		return self.uri.read_bytes()
+		
+	def rollback(self):
+
+		pass
