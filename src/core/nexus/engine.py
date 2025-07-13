@@ -1,24 +1,14 @@
 import torch
 
-# from core.nexus.services import Sentifier, Entifier
-from core.nexus.services.vectorizer import Processor as Vectorizer
-from core.nexus.services.sentifier import Processor as Sentifier
+from core.nexus.services import services
 
 
 
 class Engine:
 
-	def __init__(self):
+	def __init__(self, settings):
 
-		self.vectorizer = None
-		self.sentifier = None
-		# self.entifier = None
-
-		self.device = torch.device("cpu")
-
-	def setup(self, settings):
-
-		self.vectorizer = Vectorizer(settings)
-		self.sentifier = Sentifier(settings)# torch.load(settings.sentifier.path, weights_only = False)
+		self.settings = settings
+		self.services = { service : instance(self.settings) for service, instance in services.items() }
 
 	# Pipelines for services, pipelines' configuration must be within model structure

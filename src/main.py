@@ -9,8 +9,7 @@ import core
 if __name__ == "__main__":
 
 	settings = config.Settings()
-	engine = core.Engine()
-	engine.setup(settings)
+	engine = core.Engine(settings)
 
 	'''
 	sentiment_path = os.path.dirname(__file__) + "/storage/sentiment.json" 
