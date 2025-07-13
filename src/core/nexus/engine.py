@@ -10,3 +10,9 @@ class Engine:
 
 		self.settings = settings
 		self.services = { service : instance(self.settings) for service, instance in services.items() }
+
+	def build(self):
+
+		for service in self.services.values():
+
+			service.load()
