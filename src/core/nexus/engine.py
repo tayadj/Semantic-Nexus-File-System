@@ -10,6 +10,7 @@ class Engine:
 
 		self.settings = settings
 		self.services = { service : instance(self.settings) for service, instance in services.items() }
+		self.build()
 
 	def build(self):
 
