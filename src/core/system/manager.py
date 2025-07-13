@@ -1,6 +1,8 @@
 import pathlib
 
+from core.system.architecture.objects import Node
 from core.system.architecture.operations import CreateOperation
+
 
 
 
@@ -10,12 +12,14 @@ class Manager:
 
 		self.settings = settings
 
-	def create(self, uri: str, data: str):
+	def create(self, uri: str, data: str, metadata: dict):
 
 		uri = pathlib.Path(f"{self.settings.system.root}/{uri}.meta")
 		data = data.encode()
+		node = Node(uri, data, metadata)
+		serialized = node.serialize()
 
-		operation = CreateOperation(uri, data) # instead of str/byte array -> node object to save
+		operation = CreateOperation(uri, serialized)
 
 		try:
 
