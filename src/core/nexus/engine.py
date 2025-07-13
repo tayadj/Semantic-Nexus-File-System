@@ -1,7 +1,8 @@
 import torch
 
-from core.nexus.services import Sentifier, Entifier
+# from core.nexus.services import Sentifier, Entifier
 from core.nexus.services.vectorizer import Processor as Vectorizer
+from core.nexus.services.sentifier import Processor as Sentifier
 
 
 
@@ -18,6 +19,6 @@ class Engine:
 	def setup(self, settings):
 
 		self.vectorizer = Vectorizer(settings)
-		self.sentifier = torch.load(settings.sentifier.path, weights_only = False)
+		self.sentifier = Sentifier(settings)# torch.load(settings.sentifier.path, weights_only = False)
 
 	# Pipelines for services, pipelines' configuration must be within model structure

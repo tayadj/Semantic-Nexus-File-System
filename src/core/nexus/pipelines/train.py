@@ -51,7 +51,8 @@ def train_vectorizer(model, corpus, device, epochs = 10, iterations = 100):
 	return model
 '''
 
-
+# To Remove
+'''
 def train_sentifier(model, data, device, vectorizer):
 
 	model.to(device)
@@ -91,7 +92,7 @@ def train_sentifier(model, data, device, vectorizer):
 		print(f"Epoch {epoch:02d}/{epochs}, Loss: {average_loss:.4f}")
 
 	return model
-
+'''
 
 
 

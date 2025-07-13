@@ -1,7 +1,7 @@
 import torch
 
-
-
+# To Remove
+'''
 def inference_sentifier(model, data, device, vectorizer):
 
 	model.to(device)
@@ -20,7 +20,7 @@ def inference_sentifier(model, data, device, vectorizer):
 	for record, probability, prediction in zip(data, probabilities, predictions):
 
 		print(f"\"{record}\" -> {prediction} ({probability})")
-
+'''
 
 
 
