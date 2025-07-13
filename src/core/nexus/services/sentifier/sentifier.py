@@ -41,6 +41,7 @@ class Sentifier(torch.nn.Module):
 
 			self.texts = texts
 			self.labels = labels
+
 			self.vectorizer = vectorizer
 
 		def __len__(self):
@@ -60,9 +61,8 @@ class Sentifier(torch.nn.Module):
 
 			with torch.no_grad():
 			
-				_, static_embedding, _ = self.vectorizer(self.vectorizer.preprocess(texts))
+				_, embeddings, _ = self.vectorizer(self.vectorizer.preprocess(texts))
 			
-			embeddings = static_embedding
 			labels = torch.stack(labels)
 
 			return embeddings, labels
