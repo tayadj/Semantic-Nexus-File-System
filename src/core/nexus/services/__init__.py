@@ -1,15 +1,18 @@
 import importlib
-import pkgutil
+import pathlib
 
 
 
 services = {}
 
-for finder, module_name, is_package, in pkgutil.iter_modules(__path__):
+for entry in pathlib.Path(__file__).parent.iterdir():
 
-	module = importlib.import_module(f"{__name__}.{module_name}")
-	service = getattr(module, "Processor", None)
+	if entry.is_dir():
 
-	if service:
+		service = entry.name
+		module = importlib.import_module(f"{__package__}.{service}")
+		instance = getattr(module, "Processor", None)
 
-		services[module_name] = service
+		if instance:
+
+			services[service] = instance
