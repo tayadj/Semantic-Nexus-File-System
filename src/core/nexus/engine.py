@@ -10,5 +10,3 @@ class Engine:
 
 		self.settings = settings
 		self.services = { service : instance(self.settings) for service, instance in services.items() }
-
-	# Pipelines for services, pipelines' configuration must be within model structure

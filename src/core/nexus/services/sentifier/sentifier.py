@@ -37,7 +37,7 @@ class Sentifier(torch.nn.Module):
 
 	class Dataset(torch.utils.data.Dataset):
 
-		def __init__(self, texts, labels, vectorizer):
+		def __init__(self, texts: list[str], labels: list[int], vectorizer):
 
 			self.texts = texts
 			self.labels = labels

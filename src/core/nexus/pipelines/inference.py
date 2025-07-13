@@ -1,27 +1,5 @@
 import torch
 
-# To Remove
-'''
-def inference_sentifier(model, data, device, vectorizer):
-
-	model.to(device)
-	model.eval()
-
-	vectorizer.to(device)
-	vectorizer.eval()
-
-	with torch.no_grad():
-
-		_, static_embeddings, _ = vectorizer(vectorizer.preprocess(data))
-		logits = model(static_embeddings)
-		probabilities = torch.nn.functional.softmax(logits, dim = 1)
-		predictions = torch.argmax(probabilities, dim = 1)
-
-	for record, probability, prediction in zip(data, probabilities, predictions):
-
-		print(f"\"{record}\" -> {prediction} ({probability})")
-'''
-
 
 
 '''

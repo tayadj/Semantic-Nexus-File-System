@@ -12,14 +12,8 @@ def data_corpus(path):
 def data_sentifier(path):
 
 	sentiment = pandas.read_json(path, orient = "records")
-	sentiment = pandas.DataFrame(
-		{
-			"input": sentiment["text"],
-			"output": sentiment["sentiment"]
-		}
-	)
 
-	return sentiment
+	return (sentiment["text"].tolist(), sentiment["sentiment"].tolist())
 
 def data_entifier(path, mapping):
 
