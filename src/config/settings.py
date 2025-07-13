@@ -18,11 +18,19 @@ class EntifierConfig(pydantic.BaseModel):
 
 
 
+class SystemConfig(pydantic.BaseModel):
+
+	root: str = pydantic.Field(..., description = "File system root")
+
+
+
 class Settings(pydantic_settings.BaseSettings):
 
 	vectorizer: VectorizerConfig
 	sentifier: SentifierConfig
 	entifier: EntifierConfig
+
+	system: SystemConfig
 
 	device: str = pydantic.Field(..., description = "Application device")
 
