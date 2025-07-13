@@ -2,7 +2,7 @@ import os
 import pydantic
 import pydantic_settings
 
-
+# implement model: model uri, data: data uri instead of path; rebase data pipelines to processors.
 
 class VectorizerConfig(pydantic.BaseModel):
 

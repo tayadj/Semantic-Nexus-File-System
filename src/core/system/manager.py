@@ -1,7 +1,8 @@
+import inspect
 import pathlib
 
 from core.system.architecture.objects import Node
-from core.system.architecture.operations import Create, Read
+from core.system.architecture.operations import operations
 
 
 
@@ -11,44 +12,79 @@ class Manager:
 	def __init__(self, settings):
 
 		self.settings = settings
+		self.operations = { operation : instance for operation, instance in operations.items() }
 
-	def create(self, uri: str, data: str, metadata: dict) -> Node:
+	def __getattr__(self, operation: str):
 
-		uri = pathlib.Path(f"{self.settings.system.root}/{uri}.meta")
-		data = data.encode()
-		node = Node(uri, data, metadata)
-		serialized = node.serialize()
+		instance = self.operations.get(operation)
 
-		operation = Create(uri, serialized)
+		if instance is None:
 
-		try:
+			raise AttributeError(f"{self.__class__.__name__} has no operation {operation}")
 
-			operation.execute()
+		signature = inspect.signature(instance.__init__)
+		arguments = list(signature.parameters.values())[1:]	
+		wrapper_arguments = []
 
-		except Exception as exception:
+		for argument in arguments:
 
-			print(f"Oops! {exception}")
-			operation.rollback()
+			if argument.name == "data":
 
-		return node
+				wrapper_arguments.append(argument)
+				wrapper_arguments.append(
+					inspect.Parameter(
+						"metadata",
+						kind = inspect.Parameter.POSITIONAL_OR_KEYWORD,
+						annotation = dict
+					)	
+				)
 
-	def read(self, uri: str) -> Node:
+			else:
 
-		uri = pathlib.Path(f"{self.settings.system.root}/{uri}.meta")
+				wrapper_arguments.append(argument)
 
-		operation = Read(uri)
+		wrapper_signature = signature.replace(parameters = wrapper_arguments)
 
-		try:
+		def wrapper(*args, **kwargs):
 
-			serialized = operation.execute()
-			node = Node(...)
-			node.deserialize(serialized)
+			bound = wrapper_signature.bind_partial(*args, **kwargs)
+			operation_kwargs = {}
 
-		except Exception as exception:
+			if "uri" in bound.arguments:
 
-			print(f"Oops! {exception}")
-			operation.rollback()
+				uri = bound.arguments["uri"]
+				uri = pathlib.Path(f"{self.settings.system.root}/{uri}.meta")
+				operation_kwargs["uri"] = uri
 
-		return node
+			if "data" in bound.arguments:
 
-# implement dynamic operations declaration as is engine from nexus, each operation in its own file
+				data = bound.arguments["data"]
+				metadata = bound.arguments["metadata"]
+				blob = Node(operation_kwargs["uri"], data.encode(), metadata).serialize()
+				operation_kwargs["data"] = blob
+
+			operation = instance(**operation_kwargs)
+				
+			try:
+
+				result = operation.execute()
+
+				if isinstance(result, bytes):
+
+					node = Node()
+					node.deserialize(result)
+                   
+					return node
+
+				else:
+
+					return result
+
+			except Exception as exception:
+
+				print(f"Oops! {exception}")
+				operation.rollback()
+
+		wrapper.__signature__ = wrapper_signature
+
+		return wrapper

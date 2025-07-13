@@ -21,11 +21,3 @@ class Node:
 		self.uri = object.uri
 		self.data = object.data
 		self.metadata = object.metadata
-
-class FileNode(Node):
-
-	pass
-
-class DirectoryNode(Node):
-
-	pass
