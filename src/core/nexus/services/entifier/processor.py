@@ -25,6 +25,10 @@ class Processor:
 
 		torch.save(self.model, self.settings.entifier.model)
 
+	def instance(self, **config: any):
+
+		self.model = Entifier(**config)
+
 	def data(self) -> tuple[list[str], list[list[str]]]:
 
 		data = pandas.read_json(self.settings.entifier.data, orient = "records")
@@ -94,7 +98,7 @@ class Processor:
 			decoded_record = self.vectorizer.tokenizer.decode(record)
 
 			prediction = [int(index) for index in list(prediction)]
-			decoded_prediction = [self.model.index_to_NER[index] for index in prediction] 
+			decoded_prediction = [self.model.index_to_NER.get(index, "PADDING") for index in prediction] 
 
 			current_entity = ""
 			current_category = ""

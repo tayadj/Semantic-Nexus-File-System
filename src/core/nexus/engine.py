@@ -16,4 +16,10 @@ class Engine:
 
 		for service in self.services.values():
 
-			service.load()
+			try:
+
+				service.load()
+
+			except:
+
+				...

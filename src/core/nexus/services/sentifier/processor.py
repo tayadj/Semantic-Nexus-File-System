@@ -25,6 +25,10 @@ class Processor:
 
 		torch.save(self.model, self.settings.sentifier.model)
 
+	def instance(self, **config: any):
+
+		self.model = Sentifier(**config)
+
 	def data(self) -> tuple[list[str], list[int]]:
 
 		data = pandas.read_json(self.settings.sentifier.data, orient = "records")

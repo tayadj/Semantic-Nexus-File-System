@@ -18,6 +18,6 @@ class Symbiosis:
 
 		for service, instance in self.engine.services.items():
 
-			metadata[service] = instance.inference([data]) if service != "vectorizer" else ...
+			metadata[service] = instance.inference([data])[0] if service != "vectorizer" else ...
 
 		return (data, metadata)

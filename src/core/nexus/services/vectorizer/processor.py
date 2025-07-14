@@ -23,6 +23,10 @@ class Processor:
 
 		torch.save(self.model, self.settings.vectorizer.model)
 
+	def instance(self, corpus: list[str], **config: any):
+
+		self.model = Vectorizer(corpus, **config)
+
 	def data(self) -> list[str]:
 
 		data = pandas.read_json(self.settings.vectorizer.data, orient = "records")
