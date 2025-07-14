@@ -86,4 +86,56 @@ class Processor:
 			probabilities = torch.nn.functional.softmax(logits, dim = 2)
 			predictions = torch.argmax(probabilities, dim = 2)
 
-		return predictions
+		result = []
+
+		for record, prediction in zip(data, predictions):
+
+			record = [int(index) for index in list(record)]
+			decoded_record = self.vectorizer.tokenizer.decode(record)
+
+			prediction = [int(index) for index in list(prediction)]
+			decoded_prediction = [self.model.index_to_NER[index] for index in prediction] 
+
+			current_entity = ""
+			current_category = ""
+
+			record_result = []
+
+			for token, tag in zip(decoded_record.split(), decoded_prediction):
+
+				if token == self.vectorizer.tokenizer.token_padding:
+
+					if current_entity:
+
+						record_result.append({current_entity : current_category})
+						current_entity = ""
+						current_category = ""
+
+					break
+
+				if tag.startswith("B-"):
+
+					if current_entity:
+
+						record_result.append({current_entity : current_category})
+						current_entity = ""
+						current_category = ""
+
+					current_entity = token
+					current_category = tag[2:]
+
+				elif tag.startswith("I-") and current_category == tag[2:]:
+
+					current_entity += " " + token
+
+				else:
+
+					if current_entity:
+
+						record_result.append({current_entity : current_category})
+						current_entity = ""
+						current_category = ""
+
+			result.append(record_result)
+
+		return result
