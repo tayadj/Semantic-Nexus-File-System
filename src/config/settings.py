@@ -2,19 +2,22 @@ import os
 import pydantic
 import pydantic_settings
 
-# implement model: model uri, data: data uri instead of path; rebase data pipelines to processors.
+
 
 class VectorizerConfig(pydantic.BaseModel):
 
-	path: str = pydantic.Field(..., description = "Vectorizer model path")
+	model: str = pydantic.Field(..., description = "Vectorizer model path")
+	data: str = pydantic.Field(..., description = "Vectorizer data path")
 
 class SentifierConfig(pydantic.BaseModel):
 
-	path: str = pydantic.Field(..., description = "Sentifier model path")
+	model: str = pydantic.Field(..., description = "Sentifier model path")
+	data: str = pydantic.Field(..., description = "Sentifier data path")
 
 class EntifierConfig(pydantic.BaseModel):
 
-	path: str = pydantic.Field(..., description = "Entifier model path")
+	model: str = pydantic.Field(..., description = "Entifier model path")
+	data: str = pydantic.Field(..., description = "Entifier data path")
 
 
 
