@@ -7,6 +7,7 @@ class Create:
 	def __init__(self, uri: pathlib.Path):
 
 		self.uri = uri
+
 		self.existed = uri.exists()
 
 	def execute(self) -> None:

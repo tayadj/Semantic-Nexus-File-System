@@ -8,6 +8,7 @@ class Write:
 
 		self.uri = uri
 		self.data = data
+
 		self.existed = uri.exists()
 		self.backup = uri.read_bytes() if self.existed else None
 

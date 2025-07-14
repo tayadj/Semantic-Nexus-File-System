@@ -25,7 +25,7 @@ class SystemConfig(pydantic.BaseModel):
 
 	root: str = pydantic.Field(..., description = "File system root")
 
-
+	
 
 class Settings(pydantic_settings.BaseSettings):
 
