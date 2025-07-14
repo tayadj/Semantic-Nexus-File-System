@@ -12,7 +12,7 @@ class Symbiosis:
 		self.engine = Engine(settings)
 		self.manager = Manager(settings)
 
-	def create(self, uri: str, data: str) -> None:
+	def metafy(self, data: str) -> tuple[str, dict]:
 
 		metadata = {}
 
@@ -20,4 +20,4 @@ class Symbiosis:
 
 			metadata[service] = instance.inference([data]) if service != "vectorizer" else ...
 
-		return self.manager.create(uri, data, metadata)
+		return (data, metadata)

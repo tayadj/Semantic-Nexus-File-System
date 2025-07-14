@@ -1,3 +1,4 @@
+import pandas
 import torch
 
 from core.nexus.services.vectorizer.vectorizer import Vectorizer
@@ -15,12 +16,18 @@ class Processor:
 
 	def load(self):
 
-		self.model = torch.load(self.settings.vectorizer.path, weights_only = False)
+		self.model = torch.load(self.settings.vectorizer.model, weights_only = False)
 		self.model.to(self.device)
 
 	def save(self):
 
-		torch.save(self.model, self.settings.vectorizer.path)
+		torch.save(self.model, self.settings.vectorizer.model)
+
+	def data(self) -> list[str]:
+
+		data = pandas.read_json(self.settings.vectorizer.data, orient = "records")
+
+		return data["text"].tolist()
 
 	def train(self, data: list[str], **config: any):
 

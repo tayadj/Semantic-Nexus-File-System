@@ -1,3 +1,4 @@
+import pandas
 import torch
 
 from core.nexus.services.entifier.entifier import Entifier
@@ -11,18 +12,24 @@ class Processor:
 		self.settings = settings
 		self.device = torch.device(self.settings.device)
 		self.model = None
-		self.vectorizer = torch.load(self.settings.vectorizer.path, weights_only = False)
+		self.vectorizer = torch.load(self.settings.vectorizer.model, weights_only = False)
 		self.vectorizer.to(self.device)
 		self.vectorizer.eval()
 
 	def load(self):
 
-		self.model = torch.load(self.settings.entifier.path, weights_only = False)
+		self.model = torch.load(self.settings.entifier.model, weights_only = False)
 		self.model.to(self.device)
 
 	def save(self):
 
-		torch.save(self.model, self.settings.entifier.path)
+		torch.save(self.model, self.settings.entifier.model)
+
+	def data(self) -> tuple[list[str], list[list[str]]]:
+
+		data = pandas.read_json(self.settings.entifier.data, orient = "records")
+
+		return (data["text"].tolist(), data["entity"].tolist())
 
 	def train(self, data: tuple[list[str], list[list[str]]], **config: any):
 

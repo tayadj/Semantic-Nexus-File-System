@@ -1,3 +1,4 @@
+import pandas
 import torch
 
 from core.nexus.services.sentifier.sentifier import Sentifier
@@ -11,18 +12,24 @@ class Processor:
 		self.settings = settings
 		self.device = torch.device(self.settings.device)
 		self.model = None
-		self.vectorizer = torch.load(self.settings.vectorizer.path, weights_only = False)
+		self.vectorizer = torch.load(self.settings.vectorizer.model, weights_only = False)
 		self.vectorizer.to(self.device)
 		self.vectorizer.eval()
 
 	def load(self):
 
-		self.model = torch.load(self.settings.sentifier.path, weights_only = False)
+		self.model = torch.load(self.settings.sentifier.model, weights_only = False)
 		self.model.to(self.device)
 
 	def save(self):
 
-		torch.save(self.model, self.settings.sentifier.path)
+		torch.save(self.model, self.settings.sentifier.model)
+
+	def data(self) -> tuple[list[str], list[int]]:
+
+		data = pandas.read_json(self.settings.sentifier.data, orient = "records")
+
+		return (data["text"].tolist(), data["sentiment"].tolist())
 
 	def train(self, data: tuple[list[str], list[int]], **config: any):
 
