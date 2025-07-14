@@ -91,5 +91,6 @@ class Processor:
 			predictions = torch.argmax(probabilities, dim = 1)
 
 		result = ["Positive" if int(prediction) == 1 else "Negative" for prediction in predictions]
+		result = ["Neutral" if float(torch.max(probability)) < 0.6 else decision for decision, probability in zip(result, probabilities)]
 
 		return result
