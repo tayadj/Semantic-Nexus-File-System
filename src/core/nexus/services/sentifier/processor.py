@@ -86,4 +86,6 @@ class Processor:
 			probabilities = torch.nn.functional.softmax(logits, dim = 1)
 			predictions = torch.argmax(probabilities, dim = 1)
 
-		return predictions
+		result = ["Positive" if int(prediction) == 1 else "Negative" for prediction in predictions]
+
+		return result
