@@ -26,6 +26,11 @@ class RouterConfig(pydantic.BaseModel):
 	model: str = pydantic.Field(..., description = "Router model path")
 	data: str = pydantic.Field(..., description = "Router data path")
 
+class ExtractorConfig(pydantic.BaseModel):
+
+	model: str = pydantic.Field(..., description = "Extractor model path")
+	data: str = pydantic.Field(..., description = "Extractor data path")	
+
 
 
 class SystemConfig(pydantic.BaseModel):
@@ -41,6 +46,7 @@ class Settings(pydantic_settings.BaseSettings):
 	entifier: EntifierConfig
 
 	router: RouterConfig
+	extractor: ExtractorConfig
 
 	system: SystemConfig
 
