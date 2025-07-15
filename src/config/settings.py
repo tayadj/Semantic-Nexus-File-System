@@ -21,6 +21,13 @@ class EntifierConfig(pydantic.BaseModel):
 
 
 
+class RouterConfig(pydantic.BaseModel):
+
+	model: str = pydantic.Field(..., description = "Router model path")
+	data: str = pydantic.Field(..., description = "Router data path")
+
+
+
 class SystemConfig(pydantic.BaseModel):
 
 	root: str = pydantic.Field(..., description = "File system root")
@@ -32,6 +39,8 @@ class Settings(pydantic_settings.BaseSettings):
 	vectorizer: VectorizerConfig
 	sentifier: SentifierConfig
 	entifier: EntifierConfig
+
+	router: RouterConfig
 
 	system: SystemConfig
 
