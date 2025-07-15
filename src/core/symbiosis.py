@@ -3,9 +3,9 @@ from core.system import Manager
 
 
 
-# implement agentic approach with tools as functions (or MCP) for CRUD-etc.
-
 class Symbiosis:
+
+	# class Agent
 
 	def __init__(self, settings):
 
