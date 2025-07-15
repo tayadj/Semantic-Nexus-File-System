@@ -17,6 +17,8 @@ class Engine:
 
 	def build(self):
 
+		# to be refactored as a registry
+
 		for service in self.services.values():
 
 			try:
@@ -25,4 +27,14 @@ class Engine:
 
 			except:
 
-				...
+				service.instance()
+
+		for tool in self.tools.values():
+
+			try:
+
+				tool.load()
+
+			except:
+
+				tool.instance()
