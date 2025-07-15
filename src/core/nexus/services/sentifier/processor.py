@@ -28,6 +28,7 @@ class Processor:
 	def instance(self, **config: any):
 
 		self.model = Sentifier(**config)
+		self.model.to(self.device)
 
 	def data(self) -> tuple[list[str], list[int]]:
 

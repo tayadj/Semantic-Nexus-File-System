@@ -26,6 +26,7 @@ class Processor:
 	def instance(self, corpus: list[str], **config: any):
 
 		self.model = Vectorizer(corpus, **config)
+		self.model.to(self.device)
 
 	def data(self) -> list[str]:
 
