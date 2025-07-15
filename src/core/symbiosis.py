@@ -22,13 +22,17 @@ class Symbiosis:
 
 		return (data, metadata)
 
-	def query(self, query: str, **args):
-
-		# args to be replace by extractor
+	def query(self, query: str):
 
 		operation = self.engine.tools["router"].inference([query])[0]
+		arguments = self.engine.tools["extractor"].inference([query])[0]
 		operation = getattr(self.manager, operation, None)
 
-		if operation:
+		if len(arguments) > 1:
 
-			return operation(**args)
+			data, metadata = self.metafy(arguments[1])
+			arguments = [arguments[0], data, metadata]
+
+		if operation and arguments:
+
+			return operation(*arguments)
