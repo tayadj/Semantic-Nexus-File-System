@@ -103,9 +103,3 @@ class Tokenizer:
 		text = " ".join(tokens)
 
 		return text
-
-
-
-class BPE_Tokenizer:
-
-	pass

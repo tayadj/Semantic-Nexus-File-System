@@ -1,2 +1,2 @@
 from .engine import Engine
-from .services import *
+from .vectorizer import Tokenizer
