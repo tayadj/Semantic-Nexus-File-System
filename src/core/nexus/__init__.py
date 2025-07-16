@@ -1,2 +1,2 @@
 from .engine import Engine
-from .vectorizer import Tokenizer
+from .vectorizer import Processor

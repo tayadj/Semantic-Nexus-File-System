@@ -20,6 +20,30 @@ class Tokenizer:
 
 		self.settings = settings
 
+	def __getattr__(self, name):
+
+		if name == "size":
+
+			return len(self.token_to_index)
+
+		if name == "index_padding":
+
+			return self.token_to_index["<PADDING>"]
+
+		if name == "index_unknown":
+
+			return self.token_to_index["<UNKNOWN>"]
+
+		if name == "index_class":
+
+			return self.token_to_index["<CLASS>"]
+
+		if name == "index_mask":
+
+			return self.token_to_index["<MASK>"]
+
+		raise AttributeError(f"{type(self).__name__!r} has no attribute {name!r}")
+
 	def fit(self, corpus: list[str], size: int = 10000, threshold: int = 10):
 
 		text = " ".join(corpus)
@@ -48,6 +72,8 @@ class Tokenizer:
 		}
 
 		for index in range(len(self.token_to_index), size):
+
+			print(index)
 
 			pairs = collections.Counter(zip(indices, indices[1:]))
 
