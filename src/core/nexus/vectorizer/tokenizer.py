@@ -169,13 +169,12 @@ class Tokenizer:
 
 		with open(self.settings.tokenizer.merges, "r", encoding = "utf-8") as file:
 
-			merges = json.load(file)
+			data = json.load(file)
+			bias = data["bias"]
 
-			for merge in merges:
+			for offset, pair in enumerate(data["pairs"]):
 
-				pair = tuple(merge["pair"])
-				index = merge["index"]
-				self.merges[pair] = index
+				self.merges[tuple(pair)] = bias + offset
 
 	def save(self):
 
@@ -185,16 +184,18 @@ class Tokenizer:
 				{ index : token for index, token in self.index_to_token.items() },
 				file,
 				ensure_ascii = False,
-				indent = 2
+				separators = (",", ":")
 			)
 
 		with open(self.settings.tokenizer.merges, "w", encoding = "utf-8") as file:
 
+			bias = min(self.merges.values())
+			pairs = [list(pair) for pair, index in sorted(self.merges.items(), key = lambda x : x[1])]
+			payload = {"bias" : bias, "pairs": pairs}
+
 			json.dump(
-				[{"pair": list(pair), "index": index} for pair, index in self.merges.items()],
-				file,
-				ensure_ascii = False,
-				indent = 2
+				payload, 
+				file, 
+				ensure_ascii = False, 
+				separators = (",", ":")
 			)
-
-
