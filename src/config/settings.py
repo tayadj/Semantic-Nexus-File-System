@@ -4,6 +4,11 @@ import pydantic_settings
 
 
 
+class TokenizerConfig(pydantic.BaseModel):
+
+	vocabulary: str = pydantic.Field(..., description = "Tokenizer vocabulary storage path")
+	merges: str = pydantic.Field(..., description = "Tokenizer merges storage path")
+
 class VectorizerConfig(pydantic.BaseModel):
 
 	model: str = pydantic.Field(..., description = "Vectorizer model path")
@@ -41,6 +46,7 @@ class SystemConfig(pydantic.BaseModel):
 
 class Settings(pydantic_settings.BaseSettings):
 
+	tokenizer: TokenizerConfig
 	vectorizer: VectorizerConfig
 	sentifier: SentifierConfig
 	entifier: EntifierConfig

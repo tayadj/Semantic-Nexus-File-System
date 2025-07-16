@@ -1,16 +1,26 @@
 import collections
+import json
+import re
 
 
 
 class Tokenizer:
 
-	def __init__(self):
+	def __init__(self, settings):
 
 		self.token_to_index = {}
 		self.index_to_token = {}
 		self.merges = {}
 
-	def fit(self, corpus: list[str], size: int = 10000, specials: set[str] = {}):
+		self.specials = ["<PADDING>", "<UNKNOWN>", "<CLASS>", "<MASK>"]
+		parts = [re.escape(token) for token in self.specials]
+		parts += [r"\s+", r"\S+"]
+		pattern = "(" + ")|(".join(parts) + ")"
+		self.protected = re.compile(pattern)
+
+		self.settings = settings
+
+	def fit(self, corpus: list[str], size: int = 10000, threshold: int = 10):
 
 		text = " ".join(corpus)
 
@@ -20,9 +30,9 @@ class Tokenizer:
 		self.index_to_token = { index : token for index, token in enumerate(chars) }
 		self.token_to_index = { token : index for index, token in self.index_to_token.items() }
 
-		for token in specials:
+		for token in self.specials:
 
-			if token not in self.index_to_token:
+			if token not in self.token_to_index:
 
 				index = len(self.token_to_index)
 				self.token_to_index[token] = index
@@ -30,16 +40,30 @@ class Tokenizer:
 
 		indices = [self.token_to_index[token] for token in text]
 
+		forbidden_chars = set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r")
+		forbidden_indices = { 
+			index 
+			for index, token in self.index_to_token.items() 
+			if any(char in forbidden_chars for char in token)
+		}
+
 		for index in range(len(self.token_to_index), size):
 
-			if len(indices) == 1:
+			pairs = collections.Counter(zip(indices, indices[1:]))
+
+			for pair in list(pairs):
+
+				if pair[0] in forbidden_indices or pair[1] in forbidden_indices:
+
+					del pairs[pair]
+
+			if not pairs:
 
 				break
 
-			pairs = collections.Counter(zip(indices, indices[1:]))
-			pair = max(pairs.items(), key = lambda x : x[1])[0]
+			(pair, frequency) = pairs.most_common(1)[0]
 
-			if pair is None:
+			if frequency < threshold:
 
 				break
 
@@ -67,15 +91,9 @@ class Tokenizer:
 			self.index_to_token[index] = merged
 			self.token_to_index[merged] = index
 
-	def preprocess(self, text: str) -> str:
-
-		text = text.replace("\n", " \n ")
-
-		return text
-
 	def tokenize(self, token: str) -> list[int]:
 
-		indices = [self.token_to_index[char] for char in token]
+		indices = [self.token_to_index.get(char, self.token_to_index["<UNKNOWN>"]) for char in token]
 		flag = True
 		
 		while flag and len(indices) > 1:
@@ -111,19 +129,11 @@ class Tokenizer:
 	def encode(self, text: str) -> list[int]:
 
 		tokens = []
+		
+		for match in self.protected.finditer(text):
 
-		text = self.preprocess(text)
-		text = text.split()
-
-		for position, word in enumerate(text):
-
-			if position > 0 and not word.startswith("\n"):
-
-				tokens.append(" " + word)
-
-			else:
-
-				tokens.append(word)
+			token = match.group(0)
+			tokens.append(token)
 
 		indices = []
 
@@ -135,8 +145,7 @@ class Tokenizer:
 
 			else:
 
-				subindices = self.tokenize(token)
-				indices.extend(subindices)
+				indices.extend(self.tokenize(token))
 
 		return indices
 
@@ -146,16 +155,46 @@ class Tokenizer:
 
 		for index in indices:
 
-			token = self.index_to_token[index]
-
-			if token.startswith(" "):
-
-				text += " " + token[1:]
-
-			else:
-
-				text += token
+			text += self.index_to_token[index]
 
 		return text
+
+	def load(self):
+
+		with open(self.settings.tokenizer.vocabulary, "r", encoding = "utf-8") as file:
+
+			vocabulary = json.load(file)
+			self.index_to_token = { int(index) : token for index, token in vocabulary.items() }
+			self.token_to_index = { token : int(index) for index, token in vocabulary.items() }
+
+		with open(self.settings.tokenizer.merges, "r", encoding = "utf-8") as file:
+
+			merges = json.load(file)
+
+			for merge in merges:
+
+				pair = tuple(merge["pair"])
+				index = merge["index"]
+				self.merges[pair] = index
+
+	def save(self):
+
+		with open(self.settings.tokenizer.vocabulary, "w", encoding = "utf-8") as file:
+
+			json.dump(
+				{ index : token for index, token in self.index_to_token.items() },
+				file,
+				ensure_ascii = False,
+				indent = 2
+			)
+
+		with open(self.settings.tokenizer.merges, "w", encoding = "utf-8") as file:
+
+			json.dump(
+				[{"pair": list(pair), "index": index} for pair, index in self.merges.items()],
+				file,
+				ensure_ascii = False,
+				indent = 2
+			)
 
 
