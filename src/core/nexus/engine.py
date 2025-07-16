@@ -1,6 +1,6 @@
 import torch
 
-from core.nexus.vectorizer import Processor
+from core.nexus.vectorizer import vectorizer
 from core.nexus.services import services
 from core.nexus.agent import tools
 
@@ -11,32 +11,23 @@ class Engine:
 	def __init__(self, settings):
 
 		self.settings = settings
-		self.vectorizer = Processor(self.settings)
-		self.services = { service : instance(self.settings) for service, instance in services.items() }
-		self.tools = { tool: instance(self.settings) for tool, instance in tools.items()}
 
-		self.build()
+		self.vectorizer = self.register(vectorizer)["vectorizer"]
+		self.services = self.register(services)
+		self.tools = self.register(tools)
 
-	def build(self):
+	def register(self, components: dict[str, type]):
 
-		# to be refactored as a registry
+		instances = { component : instance(self.settings) for component, instance in components.items() }
 
-		for service in self.services.values():
-
-			try:
-
-				service.load()
-
-			except:
-
-				service.instance()
-
-		for tool in self.tools.values():
+		for instance in instances.values():
 
 			try:
 
-				tool.load()
+				instance.load()
 
-			except:
+			except Exception as exception:
 
-				tool.instance()
+				instance.instance()
+
+		return instances
