@@ -42,7 +42,23 @@ class Tokenizer:
 
 			return self.token_to_index["<MASK>"]
 
-		raise AttributeError(f"{type(self).__name__!r} has no attribute {name!r}")
+		if name == "token_padding":
+
+			return "<PADDING>"
+
+		if name == "token_unknown":
+
+			return "<UNKNOWN>"
+
+		if name == "token_class":
+
+			return "<CLASS>"
+
+		if name == "token_mask":
+
+			return "<MASK>"
+
+		raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
 
 	def fit(self, corpus: list[str], size: int = 10000, threshold: int = 10):
 
