@@ -1,4 +1,4 @@
-import pandas
+import json
 import torch
 
 from core.nexus.vectorizer.vectorizer import Vectorizer
@@ -30,9 +30,11 @@ class Processor:
 
 	def data(self) -> list[str]:
 
-		data = pandas.read_json(self.settings.vectorizer.data, orient = "records")
+		with open(self.settings.vectorizer.data, "r", encoding = "utf-8") as file:
 
-		return data["text"].tolist()
+			data = json.load(file)
+
+		return data
 
 	def train(self, data: list[str], **config: any):
 

@@ -4,6 +4,8 @@ from core.system.architecture.operations import operations
 
 
 
+# Outdated
+
 class Router(torch.nn.Module):
 
 	def __init__(self, **config: any):

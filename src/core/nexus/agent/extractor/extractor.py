@@ -2,6 +2,8 @@ import torch
 
 
 
+# Outdated
+
 class Extractor(torch.nn.Module):
 
 	def __init__(self, **config: any):
