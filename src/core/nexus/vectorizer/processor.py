@@ -14,14 +14,17 @@ class Processor:
 		self.device = torch.device(self.settings.device)
 		self.model = None
 
-	def load(self):
-
-		self.model = torch.load(self.settings.vectorizer.model, weights_only = False)
-		self.model.to(self.device)
-
 	def save(self):
 
-		torch.save(self.model, self.settings.vectorizer.model)
+		torch.save(self.model.state_dict(), self.settings.vectorizer.model)
+
+	def load(self):
+
+		state = torch.load(self.settings.vectorizer.model, map_location = self.device)
+		
+		self.instance()
+		self.model.load_state_dict(state)
+		self.model.to(self.device)
 
 	def instance(self, **config: any):
 
