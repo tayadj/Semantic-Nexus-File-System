@@ -1,3 +1,4 @@
+import math
 import random
 import torch
 
@@ -21,7 +22,7 @@ class Vectorizer(torch.nn.Module):
 		self.number_heads = config.get("number_heads", 2)
 		self.number_layers = config.get("number_layers", 2)
 		self.feedforward = config.get("feedforward", 128)
-		self.tie_weights = config.get("tie_weights", True)
+		self.tie_weights = config.get("tie_weights", False)
 
 		self.embedding = torch.nn.Embedding(self.tokenizer.size, self.dimension, padding_idx = self.tokenizer.index_padding)
 		self.positional = PositionalEncoder(dimension = self.dimension, sequence_length = self.sequence_length, dropout_rate = self.dropout_rate)
@@ -40,7 +41,8 @@ class Vectorizer(torch.nn.Module):
 
 		self.decoder = torch.nn.Linear(self.dimension, self.tokenizer.size, bias = True)
 		self.decoder.weight = self.embedding.weight if self.tie_weights else self.decoder.weight
-		torch.nn.init.zeros_(self.decoder.bias)
+		torch.nn.init.zeros_(self.decoder.weight) if not self.tie_weights else ...
+		self.decoder.bias.data.fill_(-math.log(self.tokenizer.size)) if not self.tie_weights else ...
 
 	def forward(self, tensor: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 

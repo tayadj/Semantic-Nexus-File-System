@@ -47,6 +47,9 @@ class Processor:
 		iterations = config.get("iterations", 1000)
 		batch_size = config.get("batch_size", 8)
 		learning_rate = config.get("learning_rate", 1e-4)
+		number_negatives = config.get("number_negatives", 20)
+		alpha = config.get("alpha", 1.0)
+		beta = config.get("beta", 1.0)
 
 		dataset = self.model.Dataset(data, self.model.tokenizer, self.model.sequence_length, self.model.masking_rate)
 		loader = torch.utils.data.DataLoader(dataset, batch_size = batch_size, shuffle = True, collate_fn = dataset.collate)
@@ -56,7 +59,8 @@ class Processor:
 
 		for epoch in range(1, epochs + 1):
 
-			total_loss = 0.0
+			total_loss_MLM = 0.0
+			total_loss_NCE = 0.0
 			iteration_counter = 0
 
 			for indices, labels in loader:
@@ -72,15 +76,46 @@ class Processor:
 				_, _, output = self.model(indices)
 				logits = output.view(-1,  output.size(-1))
 				targets = labels.view(-1)
-				loss = criterion(logits, targets)
+
+				loss_MLM = criterion(logits, targets)
+				#print(loss_MLM.item())
+
+				mask = targets != -1
+
+				if mask.sum() > 0:
+
+					logits_masked = logits[mask]
+					positive_indices = targets[mask]
+
+					top_logits, top_indices = logits_masked.topk(number_negatives + 1, dim = 1)
+					top_indices = top_indices[:, 1:]
+
+					permutation = torch.randperm(number_negatives, device = self.device)[:number_negatives]
+					hard_negatives = top_indices[:, permutation]
+
+					positive_logits = logits_masked.gather(1, positive_indices.unsqueeze(1))
+					negative_logits = logits_masked.gather(1, hard_negatives)
+					all_logits = torch.cat([positive_logits, negative_logits], dim = 1)
+
+					positive_loss = -torch.nn.functional.logsigmoid(positive_logits).mean()
+					negative_loss = -torch.nn.functional.logsigmoid(-negative_logits).sum(dim = 1).mean()
+					loss_NCE = positive_loss + negative_loss
+
+				else:
+
+					loss_NCE = torch.tensor(0.0, device = self.device)
+
+				loss = alpha * loss_MLM + beta * loss_NCE
 				loss.backward()
 				optimizer.step()
 
-				total_loss += loss.item()
+				total_loss_MLM += loss_MLM.item()
+				total_loss_NCE += loss_NCE.item()
 				iteration_counter += 1
 
-			average_loss = total_loss / iteration_counter
-			print(f"Epoch {epoch}/{epochs}, Loss: {average_loss:.4f}")
+			average_loss_MLM = total_loss_MLM / iteration_counter
+			average_loss_NCE = total_loss_NCE / iteration_counter
+			print(f"Epoch {epoch}/{epochs}, MLM: {average_loss_MLM:.4f}, NCE: {average_loss_NCE:.4f}")
 
 	def inference(self, data: list[str]):
 
@@ -89,7 +124,7 @@ class Processor:
 		with torch.no_grad():
 
 			data = self.model.preprocess(data)
-			_, embeddings, _ = self.model(data)
+			semantic_embeddings, static_embeddings, masking = self.model(data)
 
-		return embeddings
+		return semantic_embeddings, static_embeddings, masking
 
