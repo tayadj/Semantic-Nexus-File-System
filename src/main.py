@@ -1,4 +1,6 @@
-﻿import config
+﻿import json
+
+import config
 import core
 
 
@@ -6,10 +8,12 @@ import core
 if __name__ == "__main__":
 
 	settings = config.Settings()
-	symbiosis = core.Symbiosis(settings)
 
-	corpus = symbiosis.engine.vectorizer.data()
+	with open(settings.vectorizer.data, "r", encoding = "utf-8") as file:
 
-	processor = core.nexus.vectorizer.Processor(settings)
-	processor.instance(settings)
+		corpus = json.load(file)
+
+	# symbiosis = core.Symbiosis(settings)
+
+	vectorizer = core.nexus.vectorizer.vectorizer.Vectorizer(settings)
 	

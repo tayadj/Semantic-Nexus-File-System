@@ -12,9 +12,16 @@ class Tokenizer:
 		self.index_to_token = {}
 		self.merges = {}
 
-		self.specials = ["<PADDING>", "<UNKNOWN>", "<CLASS>", "<MASK>"]
-		parts = [re.escape(token) for token in self.specials]
-		parts += [r"\s+", r"\S+"]
+		self.specials = ["<--|PADDING|-->", "<--|UNKNOWN|-->", "<--|CLASS|-->", "<--|MASK|-->"]
+		self.contractions = ["'re", "'Re", "'rE", "'RE", "'m", "'M", "'t", "'T", "'ll", "'lL", "'Ll", "'LL", "'ve", "'vE", "'Ve", "'VE", "'d", "'D", "'s", "'S"]
+
+		parts = [
+			*map(re.escape, self.specials),
+			rf"[A-Za-z]+(?=(?:{'|'.join(map(re.escape, self.contractions))})\b)",
+			rf"(?:{'|'.join(map(re.escape, self.contractions))})\b",
+			r"\s+",
+			r"\S+",
+		]
 		pattern = "(" + ")|(".join(parts) + ")"
 		self.protected = re.compile(pattern)
 
@@ -28,39 +35,39 @@ class Tokenizer:
 
 		if name == "index_padding":
 
-			return self.token_to_index["<PADDING>"]
+			return self.token_to_index["<--|PADDING|-->"]
 
 		if name == "index_unknown":
 
-			return self.token_to_index["<UNKNOWN>"]
+			return self.token_to_index["<--|UNKNOWN|-->"]
 
 		if name == "index_class":
 
-			return self.token_to_index["<CLASS>"]
+			return self.token_to_index["<--|CLASS|-->"]
 
 		if name == "index_mask":
 
-			return self.token_to_index["<MASK>"]
+			return self.token_to_index["<--|MASK|-->"]
 
 		if name == "token_padding":
 
-			return "<PADDING>"
+			return "<--|PADDING|-->"
 
 		if name == "token_unknown":
 
-			return "<UNKNOWN>"
+			return "<--|UNKNOWN|-->"
 
 		if name == "token_class":
 
-			return "<CLASS>"
+			return "<--|CLASS|-->"
 
 		if name == "token_mask":
 
-			return "<MASK>"
+			return "<--|MASK|-->"
 
 		raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
 
-	def fit(self, corpus: list[str], size: int = 10000, threshold: int = 10):
+	def fit(self, corpus: list[str], size: int = 50000, threshold: int = 10):
 
 		text = " ".join(corpus)
 
@@ -70,7 +77,7 @@ class Tokenizer:
 		self.index_to_token = { index : token for index, token in enumerate(chars) }
 		self.token_to_index = { token : index for index, token in self.index_to_token.items() }
 
-		for token in self.specials:
+		for token in self.specials + self.contractions:
 
 			if token not in self.token_to_index:
 
@@ -78,7 +85,7 @@ class Tokenizer:
 				self.token_to_index[token] = index
 				self.index_to_token[index] = token
 
-		indices = [self.token_to_index[token] for token in text]
+		indices = [self.token_to_index.get(token, self.token_unknown) for token in text]
 
 		forbidden_chars = set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r")
 		forbidden_indices = { 
@@ -135,7 +142,7 @@ class Tokenizer:
 
 	def tokenize(self, token: str) -> list[int]:
 
-		indices = [self.token_to_index.get(char, self.token_to_index["<UNKNOWN>"]) for char in token]
+		indices = [self.token_to_index.get(char, self.token_unknown) for char in token]
 		flag = True
 		
 		while flag and len(indices) > 1:

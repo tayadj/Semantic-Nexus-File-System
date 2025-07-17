@@ -23,9 +23,9 @@ class Processor:
 
 		torch.save(self.model, self.settings.vectorizer.model)
 
-	def instance(self, settings, **config: any):
+	def instance(self, **config: any):
 
-		self.model = Vectorizer(settings, **config)
+		self.model = Vectorizer(self.settings, **config)
 		self.model.to(self.device)
 
 	def data(self) -> list[str]:
