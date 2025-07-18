@@ -1,6 +1,7 @@
 import torch
 
 
+
 class Sentifier(torch.nn.Module):
 
 	def __init__(self, **config: any):
@@ -61,7 +62,7 @@ class Sentifier(torch.nn.Module):
 
 			with torch.no_grad():
 			
-				_, embeddings, _ = self.vectorizer(self.vectorizer.preprocess(texts))
+				_, _, _, embeddings = self.vectorizer.inference(texts)
 			
 			labels = torch.stack(labels)
 

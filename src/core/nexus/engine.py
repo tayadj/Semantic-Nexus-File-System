@@ -13,8 +13,8 @@ class Engine:
 		self.settings = settings
 
 		self.vectorizer = self.register(vectorizers)["vectorizer"]
-		#self.services = self.register(services)
-		#self.tools = self.register(tools)
+		self.services = self.register(services)
+		self.tools = self.register(tools)
 
 	def register(self, components: dict[str, type]):
 

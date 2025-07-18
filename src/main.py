@@ -8,4 +8,4 @@ import core
 if __name__ == "__main__":
 
 	settings = config.Settings()
-	symbiosis = core.Symbiosis(settings)	
+	symbiosis = core.Symbiosis(settings)

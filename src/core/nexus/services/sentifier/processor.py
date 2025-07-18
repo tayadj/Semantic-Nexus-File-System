@@ -1,7 +1,8 @@
-import pandas
+import json
 import torch
 
 from core.nexus.services.sentifier.sentifier import Sentifier
+from core.nexus.vectorizer import Processor as Vectorizer
 
 
 
@@ -12,18 +13,21 @@ class Processor:
 		self.settings = settings
 		self.device = torch.device(self.settings.device)
 		self.model = None
-		self.vectorizer = torch.load(self.settings.vectorizer.model, weights_only = False)
-		self.vectorizer.to(self.device)
-		self.vectorizer.eval()
 
-	def load(self):
-
-		self.model = torch.load(self.settings.sentifier.model, weights_only = False)
-		self.model.to(self.device)
+		self.vectorizer = Vectorizer(settings)
+		self.vectorizer.load()
 
 	def save(self):
 
-		torch.save(self.model, self.settings.sentifier.model)
+		torch.save(self.model.state_dict(), self.settings.sentifier.model)
+
+	def load(self):
+
+		state = torch.load(self.settings.sentifier.model, map_location = self.device)
+		
+		self.instance()
+		self.model.load_state_dict(state)
+		self.model.to(self.device)
 
 	def instance(self, **config: any):
 
@@ -32,9 +36,13 @@ class Processor:
 
 	def data(self) -> tuple[list[str], list[int]]:
 
-		data = pandas.read_json(self.settings.sentifier.data, orient = "records")
+		with open(self.settings.sentifier.data, "r", encoding = "utf-8") as file:
 
-		return (data["text"].tolist(), data["sentiment"].tolist())
+			data = json.load(file)
+
+		texts, labels = zip(*data)
+
+		return list(texts), list(labels)
 
 	def train(self, data: tuple[list[str], list[int]], **config: any):
 
@@ -79,14 +87,13 @@ class Processor:
 			average_loss = total_loss / iteration_counter
 			print(f"Epoch {epoch}/{epochs}, Loss: {average_loss:.4f}")
 
-	def inference(self, data: list[str]):
+	def inference(self, texts: list[str]):
 
 		self.model.eval()
 
 		with torch.no_grad():
 
-			data = self.vectorizer.preprocess(data)
-			_, embeddings, _ = self.vectorizer(data)
+			_, _, _, embeddings = self.vectorizer.inference(texts)
 			logits = self.model(embeddings)
 			probabilities = torch.nn.functional.softmax(logits, dim = 1)
 			predictions = torch.argmax(probabilities, dim = 1)

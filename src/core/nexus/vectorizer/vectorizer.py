@@ -23,7 +23,6 @@ class Vectorizer(torch.nn.Module):
 		self.number_layers = config.get("number_layers", 2)
 		self.feedforward = config.get("feedforward", 128)
 		self.projection = config.get("projection", 32)
-		#self.tie_weights = config.get("tie_weights", False)
 
 		self.embedding = torch.nn.Embedding(self.tokenizer.size, self.dimension, padding_idx = self.tokenizer.index_padding)
 		self.positional = PositionalEncoder(dimension = self.dimension, sequence_length = self.sequence_length, dropout_rate = self.dropout_rate)
@@ -43,9 +42,6 @@ class Vectorizer(torch.nn.Module):
 		self.decoder = torch.nn.Linear(self.dimension, self.tokenizer.size, bias = True)
 		self.decoder.bias.data.fill_(-math.log(self.tokenizer.size))
 		torch.nn.init.xavier_uniform_(self.decoder.weight)
-		#self.decoder.weight = self.embedding.weight if self.tie_weights else self.decoder.weight
-		#torch.nn.init.zeros_(self.decoder.weight) if not self.tie_weights else ...
-		#self.decoder.bias.data.fill_(-math.log(self.tokenizer.size)) if not self.tie_weights else ...
 
 		self.projector = torch.nn.Sequential(
 			torch.nn.Linear(self.dimension, self.projection),
