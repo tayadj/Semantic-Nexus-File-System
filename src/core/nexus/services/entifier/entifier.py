@@ -2,8 +2,6 @@ import torch
 
 
 
-# Outdated
-
 class Entifier(torch.nn.Module):
 
 	def __init__(self, **config: any):
@@ -15,7 +13,7 @@ class Entifier(torch.nn.Module):
 		self.number_layers = config.get("number_layers", 2)
 		self.dropout = config.get("dropout", 0.1)
 
-		self.NER_to_index = {
+		self.tag_to_index = {
 			"O": 0, 
 			"B-PERSON": 1, "I-PERSON": 2,
 			"B-LOCATION": 3, "I-LOCATION": 4, 
@@ -26,9 +24,9 @@ class Entifier(torch.nn.Module):
 			"B-NATURAL": 13, "I-NATURAL": 14,
 			"B-ARTIFACT": 15, "I-ARTIFACT": 16
 		}
-		self.index_to_NER = { index : tag for tag, index in self.NER_to_index.items() }
-		self.NER_padding_index = len(self.NER_to_index)
-		self.NER_size = len(self.NER_to_index) + 1
+		self.index_to_tag = { index : tag for tag, index in self.tag_to_index.items() }
+		self.tag_padding_index = len(self.tag_to_index)
+		self.tag_size = len(self.tag_to_index) + 1
 
 		self.hidden = torch.nn.LSTM(
 			input_size = self.embedding,
@@ -38,7 +36,7 @@ class Entifier(torch.nn.Module):
 			bidirectional = True,
 			batch_first = True
 		)
-		self.classifier = torch.nn.Linear(self.dimension * 2, self.NER_size)
+		self.classifier = torch.nn.Linear(self.dimension * 2, self.tag_size)
 
 	def forward(self, embeddings: torch.Tensor) -> torch.Tensor:
 
@@ -49,21 +47,17 @@ class Entifier(torch.nn.Module):
 
 	class Dataset(torch.utils.data.Dataset):
 
-		def __init__(self, texts: list[str], labels: list[str], vectorizer, NER_to_index):
+		def __init__(self, texts: list[str], labels: list[str], vectorizer, tag_to_index):
 
 			self.texts = texts
 			self.labels = labels
 
 			self.vectorizer = vectorizer
 
-			self.NER_to_index = NER_to_index
-			self.index_to_NER = { index : tag for tag, index in NER_to_index.items() }
-			self.NER_padding_index = len(NER_to_index)
-			self.NER_size = len(NER_to_index) + 1
-
-		def map_NER(self, input):
-
-			return [self.NER_to_index.get(tag, self.NER_padding_index) for tag in input]
+			self.tag_to_index = tag_to_index
+			self.index_to_tag = { index : tag for tag, index in tag_to_index.items() }
+			self.tag_padding_index = len(tag_to_index)
+			self.tag_size = len(tag_to_index) + 1
 
 		def __len__(self):
 
@@ -78,19 +72,44 @@ class Entifier(torch.nn.Module):
 
 		def collate(self, batch):
 
-			texts, raw_labels = zip(*batch)
+			raw_texts, raw_labels = zip(*batch)
+
+			texts = [" ".join(raw_text) for raw_text in raw_texts]
 
 			with torch.no_grad():
 			
-				_, embeddings, _ = self.vectorizer(self.vectorizer.preprocess(texts))
+				_, _, _, embeddings = self.vectorizer.inference(texts)
 
 			batch_dimension, layer_dimension, _ = embeddings.shape		
-			labels = torch.full((batch_dimension, layer_dimension), self.NER_padding_index, dtype = torch.long)
+			labels = torch.full((batch_dimension, layer_dimension), self.tag_padding_index, dtype = torch.long)
 
-			for i, raw_label in enumerate(raw_labels):
+			for i, (raw_text, raw_labels_) in enumerate(zip(raw_texts, raw_labels)):
 
-				indices = self.map_NER(raw_label)
-				length = min(len(indices), layer_dimension - 1)
-				labels[i, 1 : length + 1] = torch.tensor(indices[:length], dtype = torch.long)
+				labels_ = []
+
+				for token, raw_label in zip(raw_text, raw_labels_):
+
+					subtokens = [self.vectorizer.model.tokenizer.index_to_token[index] for index in self.vectorizer.model.tokenizer.tokenize(token)]
+
+					if raw_label == "O":
+
+						labels_ += [self.tag_to_index.get("O", self.tag_padding_index)]  * (len(subtokens) + 1)
+			
+					else:
+
+						category = raw_label[2:]
+					
+						if raw_label.startswith("B-"):
+
+							labels_ += [self.tag_to_index.get("B-" + category, self.tag_padding_index)]
+							labels_ += [self.tag_to_index.get("I-" + category, self.tag_padding_index)] * len(subtokens) 
+
+						else:
+
+							labels_ += [self.tag_to_index.get("I-" + category, self.tag_padding_index)] * (len(subtokens) + 1)
+
+				labels_ = labels_[:-1]
+				length = min(len(labels_), layer_dimension - 1)
+				labels[i, 1 : length + 1] = torch.tensor(labels_[:length], dtype = torch.long)
 
 			return embeddings, labels

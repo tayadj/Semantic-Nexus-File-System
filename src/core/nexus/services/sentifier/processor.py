@@ -66,7 +66,7 @@ class Processor:
 
 			for embeddings, labels in loader:
 
-				if iteration_counter > iterations:
+				if iteration_counter == iterations:
 
 					break
 
