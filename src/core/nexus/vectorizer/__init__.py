@@ -1,3 +1,3 @@
 from .processor import Processor
 
-vectorizer = { "vectorizer": Processor }
+vectorizers = { "vectorizer": Processor }

@@ -15,14 +15,15 @@ class Vectorizer(torch.nn.Module):
 		self.tokenizer = Tokenizer(settings)
 		self.tokenizer.load()
 		
-		self.dimension = config.get("dimension", 32)
+		self.dimension = config.get("dimension", 64)
 		self.sequence_length = config.get("sequence_length", 128)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		self.masking_rate = config.get("masking_rate", 0.15)
 		self.number_heads = config.get("number_heads", 2)
 		self.number_layers = config.get("number_layers", 2)
 		self.feedforward = config.get("feedforward", 128)
-		self.tie_weights = config.get("tie_weights", False)
+		self.projection = config.get("projection", 32)
+		#self.tie_weights = config.get("tie_weights", False)
 
 		self.embedding = torch.nn.Embedding(self.tokenizer.size, self.dimension, padding_idx = self.tokenizer.index_padding)
 		self.positional = PositionalEncoder(dimension = self.dimension, sequence_length = self.sequence_length, dropout_rate = self.dropout_rate)
@@ -40,9 +41,17 @@ class Vectorizer(torch.nn.Module):
 		)
 
 		self.decoder = torch.nn.Linear(self.dimension, self.tokenizer.size, bias = True)
-		self.decoder.weight = self.embedding.weight if self.tie_weights else self.decoder.weight
-		torch.nn.init.zeros_(self.decoder.weight) if not self.tie_weights else ...
-		self.decoder.bias.data.fill_(-math.log(self.tokenizer.size)) if not self.tie_weights else ...
+		self.decoder.bias.data.fill_(-math.log(self.tokenizer.size))
+		torch.nn.init.xavier_uniform_(self.decoder.weight)
+		#self.decoder.weight = self.embedding.weight if self.tie_weights else self.decoder.weight
+		#torch.nn.init.zeros_(self.decoder.weight) if not self.tie_weights else ...
+		#self.decoder.bias.data.fill_(-math.log(self.tokenizer.size)) if not self.tie_weights else ...
+
+		self.projector = torch.nn.Sequential(
+			torch.nn.Linear(self.dimension, self.projection),
+			torch.nn.ReLU(),
+			torch.nn.Linear(self.projection, self.projection)
+		)
 
 	def forward(self, tensor: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
@@ -52,8 +61,10 @@ class Vectorizer(torch.nn.Module):
 		positional = self.positional(embedding)
 		hidden = self.encoder(positional, src_key_padding_mask = mask)
 		output = self.decoder(hidden)
+		projection = self.projector(hidden)
+		projection = torch.nn.functional.normalize(projection, dim = -1)
 
-		return hidden, embedding, output
+		return hidden, embedding, output, projection
 
 	def preprocess(self, texts: list[str], device: torch.device = torch.device("cpu")) -> torch.Tensor:
 
