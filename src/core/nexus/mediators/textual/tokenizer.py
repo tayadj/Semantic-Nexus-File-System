@@ -210,13 +210,13 @@ class Tokenizer:
 
 	def load(self):
 
-		with open(self.settings.tokenizer.vocabulary, "r", encoding = "utf-8") as file:
+		with open(self.settings.mediators["textual"].vocabulary, "r", encoding = "utf-8") as file:
 
 			vocabulary = json.load(file)
 			self.index_to_token = { int(index) : token for index, token in vocabulary.items() }
 			self.token_to_index = { token : int(index) for index, token in vocabulary.items() }
 
-		with open(self.settings.tokenizer.merges, "r", encoding = "utf-8") as file:
+		with open(self.settings.mediators["textual"].merges, "r", encoding = "utf-8") as file:
 
 			data = json.load(file)
 			bias = data["bias"]
@@ -227,7 +227,7 @@ class Tokenizer:
 
 	def save(self):
 
-		with open(self.settings.tokenizer.vocabulary, "w", encoding = "utf-8") as file:
+		with open(self.settings.mediators["textual"].vocabulary, "w", encoding = "utf-8") as file:
 
 			json.dump(
 				{ index : token for index, token in self.index_to_token.items() },
@@ -236,7 +236,7 @@ class Tokenizer:
 				separators = (",", ":")
 			)
 
-		with open(self.settings.tokenizer.merges, "w", encoding = "utf-8") as file:
+		with open(self.settings.mediators["textual"].merges, "w", encoding = "utf-8") as file:
 
 			bias = min(self.merges.values())
 			pairs = [list(pair) for pair, index in sorted(self.merges.items(), key = lambda x : x[1])]

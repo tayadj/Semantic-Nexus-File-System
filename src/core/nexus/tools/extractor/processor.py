@@ -11,7 +11,7 @@ class Processor:
 	def __init__(self, settings):
 
 		self.settings = settings
-		self.device = torch.device(self.settings.device)
+		self.device = torch.device(self.settings.system.device)
 		self.model = None
 
 		self.vectorizer = Vectorizer(settings)
@@ -19,11 +19,11 @@ class Processor:
 
 	def save(self):
 
-		torch.save(self.model.state_dict(), self.settings.extractor.model)
+		torch.save(self.model.state_dict(), self.settings.tools["extractor"].model)
 
 	def load(self):
 
-		state = torch.load(self.settings.extractor.model, map_location = self.device)
+		state = torch.load(self.settings.tools["extractor"].model, map_location = self.device)
 		
 		self.instance()
 		self.model.load_state_dict(state)
@@ -36,7 +36,7 @@ class Processor:
 
 	def data(self) -> tuple[list[list[str]], list[list[str]]]:
 
-		with open(self.settings.extractor.data, "r", encoding = "utf-8") as file:
+		with open(self.settings.tools["extractor"].data, "r", encoding = "utf-8") as file:
 
 			data = json.load(file)
 
