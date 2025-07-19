@@ -26,6 +26,7 @@ class Symbiosis:
 
 		operation = self.engine.tools["router"].inference([query])[0]
 		arguments = self.engine.tools["extractor"].inference([query])[0]
+
 		operation = getattr(self.manager, operation, None)
 
 		if len(arguments) > 1:

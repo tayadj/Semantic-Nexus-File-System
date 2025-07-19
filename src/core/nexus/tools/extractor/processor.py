@@ -1,7 +1,8 @@
-import pandas
+import json
 import torch
 
-from core.nexus.agent.extractor.extractor import Extractor
+from core.nexus.tools.extractor.extractor import Extractor
+from core.nexus.mediators.textual import Processor as Vectorizer
 
 
 
@@ -12,29 +13,36 @@ class Processor:
 		self.settings = settings
 		self.device = torch.device(self.settings.device)
 		self.model = None
-		self.vectorizer = torch.load(self.settings.vectorizer.model, weights_only = False)
-		self.vectorizer.to(self.device)
-		self.vectorizer.eval()
 
-	def load(self):
-
-		self.model = torch.load(self.settings.extractor.model, weights_only = False)
-		self.model.to(self.device)
+		self.vectorizer = Vectorizer(settings)
+		self.vectorizer.load()
 
 	def save(self):
 
-		torch.save(self.model, self.settings.extractor.model)
+		torch.save(self.model.state_dict(), self.settings.extractor.model)
+
+	def load(self):
+
+		state = torch.load(self.settings.extractor.model, map_location = self.device)
+		
+		self.instance()
+		self.model.load_state_dict(state)
+		self.model.to(self.device)
 
 	def instance(self, **config: any):
 
 		self.model = Extractor(**config)
 		self.model.to(self.device)
 
-	def data(self) -> tuple[list[str], list[list[str]]]:
+	def data(self) -> tuple[list[list[str]], list[list[str]]]:
 
-		data = pandas.read_json(self.settings.extractor.data, orient = "records")
+		with open(self.settings.extractor.data, "r", encoding = "utf-8") as file:
 
-		return (data["text"].tolist(), data["entity"].tolist())
+			data = json.load(file)
+
+		texts, labels = zip(*data)
+
+		return list(texts), list(labels)
 
 	def train(self, data: tuple[list[str], list[list[str]]], **config: any):
 
@@ -45,11 +53,11 @@ class Processor:
 		batch_size = config.get("batch_size", 8)
 		learning_rate = config.get("learning_rate", 1e-3)
 
-		dataset = self.model.Dataset(data[0], data[1], self.vectorizer, self.model.NER_to_index)
+		dataset = self.model.Dataset(data[0], data[1], self.vectorizer, self.model.tag_to_index)
 		loader = torch.utils.data.DataLoader(dataset, batch_size = batch_size, shuffle = True, collate_fn = dataset.collate)
 
 		optimizer = torch.optim.Adam(self.model.parameters(), lr = learning_rate)
-		criterion = torch.nn.CrossEntropyLoss(ignore_index = self.model.NER_padding_index)
+		criterion = torch.nn.CrossEntropyLoss(ignore_index = self.model.tag_padding_index)
 
 		for epoch in range(1, epochs + 1):
 
@@ -85,35 +93,36 @@ class Processor:
 
 		with torch.no_grad():
 
-			data = self.vectorizer.preprocess(data)
-			_, embeddings, _ = self.vectorizer(data)
+			_, _, _, embeddings = self.vectorizer.inference(data)
 			logits = self.model(embeddings)
 			probabilities = torch.nn.functional.softmax(logits, dim = 2)
 			predictions = torch.argmax(probabilities, dim = 2)
 
 		result = []
+		data = self.vectorizer.model.preprocess(data)
 
 		for record, prediction in zip(data, predictions):
 
 			record = [int(index) for index in list(record)]
-			decoded_record = self.vectorizer.tokenizer.decode(record)
+			decoded_record = [self.vectorizer.model.tokenizer.index_to_token[index] for index in record]
 
 			prediction = [int(index) for index in list(prediction)]
-			decoded_prediction = [self.model.index_to_NER.get(index, "PADDING") for index in prediction] 
+			decoded_prediction = [self.model.index_to_tag.get(index, "<--|PADDING|-->") for index in prediction] 
 
 			current_entity = ""
 			current_category = ""
 
 			record_result = []
 
-			for token, tag in zip(decoded_record.split(), decoded_prediction):
+			for token, tag in zip(decoded_record[1:], decoded_prediction[1:]):
 
-				if token == self.vectorizer.tokenizer.token_padding:
+				if token == self.vectorizer.model.tokenizer.token_padding:
 
 					if current_entity:
 
 						record_result.append(current_entity)
 						current_entity = ""
+						current_category = ""
 
 					break
 
@@ -123,20 +132,28 @@ class Processor:
 
 						record_result.append(current_entity)
 						current_entity = ""
+						current_category = ""
 
 					current_entity = token
 					current_category = tag[2:]
 
 				elif tag.startswith("I-") and current_category == tag[2:]:
 
-					current_entity += " " + token
+					current_entity += token
 
 				else:
 
 					if current_entity:
 
-						record_result.append(current_entity)
-						current_entity = ""
+						if token == " ":
+
+							current_entity += " "
+
+						else:
+
+							record_result.append(current_entity)
+							current_entity = ""
+							current_category = ""
 
 			result.append(record_result)
 
