@@ -141,7 +141,7 @@ class PositionalEncoder(torch.nn.Module):
 
 		super().__init__()
 
-		self.dimension = config.get("dimension", 32)
+		self.dimension = config.get("dimension", 64)
 		self.sequence_length = config.get("sequence_length", 128)
 		self.dropout_rate = config.get("dropout_rate", 0.1)
 		
