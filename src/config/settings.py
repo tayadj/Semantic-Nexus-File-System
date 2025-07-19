@@ -12,6 +12,7 @@ import pydantic_settings
 
 
 class NexusConfig(pydantic.BaseModel):
+
 	"""
 	Base model for a Nexus module configuration.
 
@@ -25,6 +26,7 @@ class NexusConfig(pydantic.BaseModel):
 	"""
 
 	class Config:
+
 		"""
 		Pydantic configuration for NexusConfig.
 
@@ -38,6 +40,7 @@ class NexusConfig(pydantic.BaseModel):
 		}
 
 class SystemConfig(pydantic.BaseModel):
+
 	"""
 	Core system configuration.
 
@@ -50,6 +53,7 @@ class SystemConfig(pydantic.BaseModel):
 	device: str = pydantic.Field(..., description = "System device")
 
 class Settings(pydantic_settings.BaseSettings):
+
 	"""
 	Primary application settings loader.
 
@@ -71,6 +75,7 @@ class Settings(pydantic_settings.BaseSettings):
 	tools: dict[str, NexusConfig] = {}
 
 	class Config:
+
 		"""
 		Pydantic-Settings configuration.
 
@@ -88,6 +93,7 @@ class Settings(pydantic_settings.BaseSettings):
 		extra = pydantic.Extra.ignore
 
 	def __init__(self, **kwargs: any):
+
 		"""
 		Initialize Settings instance and aggregate module configs.
 
@@ -106,6 +112,7 @@ class Settings(pydantic_settings.BaseSettings):
 		self.tools = self.aggregate("TOOLS", variables)
 
 	def environment(self, path: str, encoding: str) -> dict[str, str]:
+
 		"""
 		Read a .env file and parse simple KEY=VALUE pairs.
 
@@ -141,6 +148,7 @@ class Settings(pydantic_settings.BaseSettings):
 		return variables
 	
 	def aggregate(self, prefix: str, variables: dict[str, str]) -> dict[str, NexusConfig]:
+
 		"""
 		Extract and group environment variables by module prefix.
 
