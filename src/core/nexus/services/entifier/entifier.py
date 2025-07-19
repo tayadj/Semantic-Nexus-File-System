@@ -93,7 +93,7 @@ class Entifier(torch.nn.Module):
 
 					if raw_label == "O":
 
-						labels_ += [self.tag_to_index.get("O", self.tag_padding_index)]  * (len(subtokens) + 1)
+						labels_ += [self.tag_to_index.get("O", self.tag_padding_index)]  * len(subtokens)
 			
 					else:
 
@@ -102,11 +102,13 @@ class Entifier(torch.nn.Module):
 						if raw_label.startswith("B-"):
 
 							labels_ += [self.tag_to_index.get("B-" + category, self.tag_padding_index)]
-							labels_ += [self.tag_to_index.get("I-" + category, self.tag_padding_index)] * len(subtokens) 
+							labels_ += [self.tag_to_index.get("I-" + category, self.tag_padding_index)] * (len(subtokens) - 1)
 
 						else:
 
-							labels_ += [self.tag_to_index.get("I-" + category, self.tag_padding_index)] * (len(subtokens) + 1)
+							labels_ += [self.tag_to_index.get("I-" + category, self.tag_padding_index)] * len(subtokens)
+
+					labels_ += [self.tag_to_index.get("O", self.tag_padding_index)]
 
 				labels_ = labels_[:-1]
 				length = min(len(labels_), layer_dimension - 1)

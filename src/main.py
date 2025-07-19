@@ -1,6 +1,4 @@
-﻿import json
-
-import config
+﻿import config
 import core
 
 

@@ -52,12 +52,24 @@ class Processor:
 		iterations = config.get("iterations", 1000)
 		batch_size = config.get("batch_size", 8)
 		learning_rate = config.get("learning_rate", 1e-3)
+		max_learning_factor = config.get("max_learning_factore", 10)
+		warmup_ratio = config.get("warmup_ratio", 0.3)
 
 		dataset = self.model.Dataset(data[0], data[1], self.vectorizer, self.model.tag_to_index)
 		loader = torch.utils.data.DataLoader(dataset, batch_size = batch_size, shuffle = True, collate_fn = dataset.collate)
 
 		optimizer = torch.optim.Adam(self.model.parameters(), lr = learning_rate)
 		criterion = torch.nn.CrossEntropyLoss(ignore_index = self.model.tag_padding_index)
+
+		scheduler = torch.optim.lr_scheduler.OneCycleLR(
+			optimizer,
+			max_lr = learning_rate * max_learning_factor,
+			epochs = epochs,
+			steps_per_epoch = iterations,
+			pct_start = warmup_ratio,
+			anneal_strategy = "cos",
+			cycle_momentum = False
+		)
 
 		for epoch in range(1, epochs + 1):
 
@@ -73,21 +85,25 @@ class Processor:
 				embeddings = embeddings.to(self.device)
 				labels = labels.to(self.device)
 
-				#print(embeddings, labels)
-
 				optimizer.zero_grad()
+
 				output = self.model(embeddings)
 				logits = output.view(-1, output.shape[2])
 				targets = labels.view(-1)
+
 				loss = criterion(logits, targets)
+
 				loss.backward()
+
 				optimizer.step()
+				scheduler.step()
 
 				total_loss += loss.item()
 				iteration_counter += 1
 
 			average_loss = total_loss / iteration_counter
-			print(f"Epoch {epoch}/{epochs}, Loss: {average_loss:.4f}")
+			current_learning_rate = scheduler.get_last_lr()[0]
+			print(f"Epoch {epoch}/{epochs}, learning rate = {current_learning_rate:.4f} -> Loss: {average_loss:.4f}")
 
 	def inference(self, data: list[str]):
 
@@ -124,7 +140,7 @@ class Processor:
 
 					if current_entity:
 
-						record_result.append({current_entity : current_category})
+						record_result.append({current_entity.strip() : current_category})
 						current_entity = ""
 						current_category = ""
 
@@ -134,7 +150,7 @@ class Processor:
 
 					if current_entity:
 
-						record_result.append({current_entity : current_category})
+						record_result.append({current_entity.strip() : current_category})
 						current_entity = ""
 						current_category = ""
 
@@ -149,9 +165,15 @@ class Processor:
 
 					if current_entity:
 
-						record_result.append({current_entity : current_category})
-						current_entity = ""
-						current_category = ""
+						if token == " ":
+
+							current_entity += " "
+
+						else:
+
+							record_result.append({current_entity.strip() : current_category})
+							current_entity = ""
+							current_category = ""
 
 			result.append(record_result)
 
