@@ -2,7 +2,7 @@ import json
 import torch
 
 from core.nexus.services.entifier.entifier import Entifier
-from core.nexus.vectorizer import Processor as Vectorizer
+from core.nexus.mediators.textual import Processor as Vectorizer
 
 
 
@@ -115,8 +115,6 @@ class Processor:
 			logits = self.model(embeddings)
 			probabilities = torch.nn.functional.softmax(logits, dim = 2)
 			predictions = torch.argmax(probabilities, dim = 2)
-
-		print(predictions)
 
 		result = []
 		data = self.vectorizer.model.preprocess(data)

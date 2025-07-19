@@ -2,7 +2,7 @@ import json
 import torch
 
 from core.nexus.services.sentifier.sentifier import Sentifier
-from core.nexus.vectorizer import Processor as Vectorizer
+from core.nexus.mediators.textual import Processor as Vectorizer
 
 
 

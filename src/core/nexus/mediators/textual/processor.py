@@ -1,8 +1,8 @@
 import json
 import torch
 
-from core.nexus.vectorizer.vectorizer import Vectorizer
-from core.nexus.vectorizer.tokenizer import Tokenizer
+from core.nexus.mediators.textual.vectorizer import Vectorizer
+from core.nexus.mediators.textual.tokenizer import Tokenizer
 
 
 

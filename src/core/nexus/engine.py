@@ -1,8 +1,8 @@
 import torch
 
-from core.nexus.vectorizer import vectorizers
+from core.nexus.mediators import mediators
 from core.nexus.services import services
-from core.nexus.agent import tools
+from core.nexus.tools import tools
 
 
 
@@ -12,7 +12,7 @@ class Engine:
 
 		self.settings = settings
 
-		self.vectorizer = self.register(vectorizers)["vectorizer"]
+		self.mediators = self.register(mediators)
 		self.services = self.register(services)
 		self.tools = self.register(tools)
 

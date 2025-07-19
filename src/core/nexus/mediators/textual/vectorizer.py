@@ -2,7 +2,7 @@ import math
 import random
 import torch
 
-from core.nexus.vectorizer.tokenizer import Tokenizer
+from core.nexus.mediators.textual.tokenizer import Tokenizer
 
 
 
