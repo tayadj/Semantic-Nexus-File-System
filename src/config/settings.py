@@ -4,64 +4,82 @@ import pydantic_settings
 
 
 
-class TokenizerConfig(pydantic.BaseModel):
+class NexusConfig(pydantic.BaseModel):
 
-	vocabulary: str = pydantic.Field(..., description = "Tokenizer vocabulary storage path")
-	merges: str = pydantic.Field(..., description = "Tokenizer merges storage path")
+	class Config:
 
-class VectorizerConfig(pydantic.BaseModel):
-
-	model: str = pydantic.Field(..., description = "Vectorizer model path")
-	data: str = pydantic.Field(..., description = "Vectorizer data path")
-
-class SentifierConfig(pydantic.BaseModel):
-
-	model: str = pydantic.Field(..., description = "Sentifier model path")
-	data: str = pydantic.Field(..., description = "Sentifier data path")
-
-class EntifierConfig(pydantic.BaseModel):
-
-	model: str = pydantic.Field(..., description = "Entifier model path")
-	data: str = pydantic.Field(..., description = "Entifier data path")
-
-
-
-class RouterConfig(pydantic.BaseModel):
-
-	model: str = pydantic.Field(..., description = "Router model path")
-	data: str = pydantic.Field(..., description = "Router data path")
-
-class ExtractorConfig(pydantic.BaseModel):
-
-	model: str = pydantic.Field(..., description = "Extractor model path")
-	data: str = pydantic.Field(..., description = "Extractor data path")	
-
-
+		extra = pydantic.Extra.allow      
+		json_schema_extra = {
+			"description": "Nexus module configuration"
+		}
 
 class SystemConfig(pydantic.BaseModel):
 
-	root: str = pydantic.Field(..., description = "File system root")
-
-	
+	root: str = pydantic.Field(..., description = "System root")
+	device: str = pydantic.Field(..., description = "System device")
 
 class Settings(pydantic_settings.BaseSettings):
 
-	tokenizer: TokenizerConfig
-	vectorizer: VectorizerConfig
-	sentifier: SentifierConfig
-	entifier: EntifierConfig
-
-	router: RouterConfig
-	extractor: ExtractorConfig
-
 	system: SystemConfig
 
-	device: str = pydantic.Field(..., description = "Application device")
+	mediators: dict[str, NexusConfig] = {}
+	services: dict[str, NexusConfig] = {}
+	tools: dict[str, NexusConfig] = {}
 
-	model_config = pydantic_settings.SettingsConfigDict(
-        env_file = os.path.dirname(__file__) + '/.env',
-        env_file_encoding = "utf-8",
-        env_nested_delimiter = "__",
-        case_sensitive = False,
-		extra = 'ignore'
-    )
+	class Config:
+
+		env_file = os.path.dirname(__file__) + '/.env'
+		env_file_encoding = "utf-8"
+		env_nested_delimiter = "___"
+		case_sensitive = False
+		extra = pydantic.Extra.ignore
+
+	def __init__(self, **kwargs: any):
+
+		super().__init__(**kwargs)
+
+		variables = self.environment(self.Config.env_file, self.Config.env_file_encoding)
+
+		self.mediators = self.aggregate("MEDIATORS", variables)
+		self.services = self.aggregate("SERVICES", variables)
+		self.tools = self.aggregate("TOOLS", variables)
+
+	def environment(self, path: str, encoding: str) -> dict[str, str]:
+
+		variables = {}
+
+		with open(path, encoding = encoding) as file:
+
+			for raw in file:
+
+				line = raw.strip()
+
+				if not line or line.startswith("#") or "=" not in line:
+
+					continue
+
+				key, value = line.split("=", maxsplit = 1)
+				key = key.strip()
+				value = value.strip().strip("'").strip("\"")
+
+				variables[key] = value
+
+		return variables
+	
+	def aggregate(self, prefix: str, variables: dict[str, str]) -> dict[str, NexusConfig]:
+
+		bucket = {}
+
+		for key, value in variables.items():
+
+			if not key.startswith(prefix + self.Config.env_nested_delimiter):
+
+				continue
+
+			_, module, field = key.split(self.Config.env_nested_delimiter, maxsplit = 2)
+			bucket.setdefault(module.lower(), {})[field.lower()] = value
+
+		return {
+			module : NexusConfig(**configuration)
+			for module, configuration in bucket.items()
+		}
