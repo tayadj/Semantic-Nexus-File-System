@@ -1,7 +1,8 @@
-import pandas
+import json
 import torch
 
 from core.nexus.tools.router.router import Router
+from core.nexus.mediators.textual import Processor as Vectorizer
 
 
 
@@ -12,18 +13,21 @@ class Processor:
 		self.settings = settings
 		self.device = torch.device(self.settings.device)
 		self.model = None
-		self.vectorizer = torch.load(self.settings.vectorizer.model, weights_only = False)
-		self.vectorizer.to(self.device)
-		self.vectorizer.eval()
 
-	def load(self):
-
-		self.model = torch.load(self.settings.router.model, weights_only = False)
-		self.model.to(self.device)
+		self.vectorizer = Vectorizer(settings)
+		self.vectorizer.load()
 
 	def save(self):
 
-		torch.save(self.model, self.settings.router.model)
+		torch.save(self.model.state_dict(), self.settings.router.model)
+
+	def load(self):
+
+		state = torch.load(self.settings.router.model, map_location = self.device)
+		
+		self.instance()
+		self.model.load_state_dict(state)
+		self.model.to(self.device)
 
 	def instance(self, **config: any):
 
@@ -32,9 +36,13 @@ class Processor:
 
 	def data(self) -> tuple[list[str], list[str]]:
 
-		data = pandas.read_json(self.settings.router.data, orient = "records")
+		with open(self.settings.router.data, "r", encoding = "utf-8") as file:
 
-		return (data["text"].tolist(), data["operation"].tolist())
+			data = json.load(file)
+
+		texts, labels = zip(*data)
+
+		return list(texts), list(labels)
 
 	def train(self, data: tuple[list[str], list[str]], **config: any):
 
@@ -85,8 +93,7 @@ class Processor:
 
 		with torch.no_grad():
 
-			data = self.vectorizer.preprocess(data)
-			_, embeddings, _ = self.vectorizer(data)
+			_, _, _, embeddings = self.vectorizer.inference(data)
 			logits = self.model(embeddings)
 			probabilities = torch.nn.functional.softmax(logits, dim = 1)
 			predictions = torch.argmax(probabilities, dim = 1)

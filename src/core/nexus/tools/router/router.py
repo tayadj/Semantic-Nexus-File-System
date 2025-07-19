@@ -4,8 +4,6 @@ from core.system.architecture.operations import operations
 
 
 
-# Outdated
-
 class Router(torch.nn.Module):
 
 	def __init__(self, **config: any):
@@ -78,7 +76,7 @@ class Router(torch.nn.Module):
 
 			with torch.no_grad():
 			
-				_, embeddings, _ = self.vectorizer(self.vectorizer.preprocess(texts))
+				_, _, _, embeddings = self.vectorizer.inference(texts)
 			
 			labels = torch.tensor([self.operation_to_index.get(label, self.operation_undefined) for label in labels], dtype = torch.long)
 
