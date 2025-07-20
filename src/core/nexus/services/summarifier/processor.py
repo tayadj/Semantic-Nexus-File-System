@@ -43,3 +43,11 @@ class Processor:
 		texts, summaries = zip(*data)
 
 		return list(texts), list(summaries)
+
+	def train(self, data: tuple[list[list[str]], list[list[str]]], **config: any):
+
+		pass
+
+	def inference(self, data: list[str]):
+
+		pass

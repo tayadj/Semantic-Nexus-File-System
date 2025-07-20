@@ -12,7 +12,7 @@ class Tokenizer:
 		self.index_to_token = {}
 		self.merges = {}
 
-		self.specials = ["<--|PADDING|-->", "<--|UNKNOWN|-->", "<--|CLASS|-->", "<--|MASK|-->"]
+		self.specials = ["<--|PADDING|-->", "<--|UNKNOWN|-->", "<--|CLASS|-->", "<--|MASK|-->"] # "<--|START|-->", "<--|END|-->"
 		self.contractions = ["'re", "'Re", "'rE", "'RE", "'m", "'M", "'t", "'T", "'ll", "'lL", "'Ll", "'LL", "'ve", "'vE", "'Ve", "'VE", "'d", "'D", "'s", "'S"]
 
 		parts = [
