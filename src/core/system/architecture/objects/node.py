@@ -11,6 +11,10 @@ class Node:
 		self.data = data
 		self.metadata = metadata
 
+	def __str__(self) -> str:
+		
+		return f"<Node {self.uri.name}: size = {len(self.serialize())} bytes, data = {self.data}, metadata = {self.metadata}>"
+
 	def serialize(self) -> bytes:
 
 		return pickle.dumps(self)
